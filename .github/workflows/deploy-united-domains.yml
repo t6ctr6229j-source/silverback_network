@@ -1,0 +1,35 @@
+name: Check and deploy Silverback
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: silverback-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript
+        run: |
+          node --check dist/app.js
+          node --check dist/analytics.js
+      - name: Install browser for consent and layout checks
+        run: |
+          npm install --no-save --package-lock=false playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Check consent and responsive layout without sending Analytics data
+        run: node scripts/browser-qa.cjs
+      - name: Install SFTP client
+        run: sudo apt-get update -qq && sudo apt-get install -y python3-paramiko
+      - name: Upload to United Domains
+        env:
+          UD_SFTP_HOST: ${{ secrets.UD_SFTP_HOST }}
+          UD_SFTP_USER: ${{ secrets.UD_SFTP_USER }}
+          UD_SFTP_PASSWORD: ${{ secrets.UD_SFTP_PASSWORD }}
+          UD_SFTP_KNOWN_HOSTS: ${{ secrets.UD_SFTP_KNOWN_HOSTS }}
+        run: /usr/bin/python3 scripts/deploy-sftp.py
