@@ -1,6 +1,6 @@
 # Silverback Network
 
-Statische Website für https://silverback-network.com. Design: Aubergine, Limette und Offwhite.
+Statische Website für https://www.silverback-network.com. Design: Aubergine, Limette und Offwhite.
 
 ## Website und Vorschau
 

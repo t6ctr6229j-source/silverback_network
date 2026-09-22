@@ -23,7 +23,7 @@ if known_hosts:
 else:
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-client.connect(os.environ['UD_SFTP_HOST'], port=22,
+client.connect(os.environ['UD_SFTP_HOST'], port=int(os.environ.get('UD_SFTP_PORT') or '22'),
                username=os.environ['UD_SFTP_USER'], password=os.environ['UD_SFTP_PASSWORD'],
                look_for_keys=False, allow_agent=False, timeout=30,
                banner_timeout=30, auth_timeout=30)

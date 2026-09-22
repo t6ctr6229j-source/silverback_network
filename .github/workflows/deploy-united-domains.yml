@@ -29,7 +29,10 @@ jobs:
       - name: Upload to United Domains
         env:
           UD_SFTP_HOST: ${{ secrets.UD_SFTP_HOST }}
+          UD_SFTP_PORT: ${{ secrets.UD_SFTP_PORT }}
           UD_SFTP_USER: ${{ secrets.UD_SFTP_USER }}
           UD_SFTP_PASSWORD: ${{ secrets.UD_SFTP_PASSWORD }}
           UD_SFTP_KNOWN_HOSTS: ${{ secrets.UD_SFTP_KNOWN_HOSTS }}
         run: /usr/bin/python3 scripts/deploy-sftp.py
+      - name: Verify public HTTPS website
+        run: python3 scripts/verify-public.py
