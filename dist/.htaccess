@@ -1,0 +1,7 @@
+# BEGIN SILVERBACK CANONICAL
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^silverback-network\.com(?::[0-9]+)?$ [NC]
+RewriteRule ^ https://www.silverback-network.com%{REQUEST_URI} [R=301,L,NE]
+</IfModule>
+# END SILVERBACK CANONICAL

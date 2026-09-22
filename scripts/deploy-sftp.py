@@ -2,6 +2,7 @@
 import os
 import posixpath
 import stat
+import re
 from pathlib import Path
 import paramiko
 
@@ -51,7 +52,18 @@ try:
                 folder = posixpath.join(folder, part)
                 directory(folder)
             temporary = remote + '.upload-' + os.environ.get('GITHUB_RUN_ID', 'manual')
-            sftp.put(str(file), temporary, confirm=True)
+            if relative == '.htaccess':
+                try:
+                    with sftp.open(remote, 'rb') as existing:
+                        previous = existing.read()
+                except FileNotFoundError:
+                    previous = b''
+                # Keep all existing hosting rules; replace only our managed block.
+                previous = re.sub(rb'# BEGIN SILVERBACK CANONICAL\r?\n.*?# END SILVERBACK CANONICAL\r?\n?', b'', previous, flags=re.S)
+                with sftp.open(temporary, 'wb') as output:
+                    output.write(file.read_bytes().rstrip() + b'\n' + previous)
+            else:
+                sftp.put(str(file), temporary, confirm=True)
             sftp.chmod(temporary, 0o644)
             sftp.posix_rename(temporary, remote)
         print(f'Uploaded {len(files)} files to the dedicated silverback folder. No remote files deleted.')
