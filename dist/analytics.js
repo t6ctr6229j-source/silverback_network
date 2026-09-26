@@ -67,13 +67,12 @@
     script.async = true;
     script.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
     document.head.append(script);
-    // Long consent lifetimes exceed the browser's maximum timer delay.
-    function checkExpiry() {
-      const remaining = expires - Date.now();
-      if (remaining <= 0) { stop(); panel.hidden = false; return; }
-      expiryTimer = setTimeout(checkExpiry, Math.min(remaining, 2147483647));
-    }
-    checkExpiry();
+  }
+  function watchExpiry(expires) {
+    clearTimeout(expiryTimer);
+    const remaining = expires - Date.now();
+    if (remaining <= 0) { stop(); showPanel(); return; }
+    expiryTimer = setTimeout(() => watchExpiry(expires), Math.min(remaining, 2147483647));
   }
   function choose(choice) {
     const value = { choice, expires: Date.now() + lifetime };
@@ -82,6 +81,7 @@
     settings.focus();
     if (choice === 'accepted') start(value.expires);
     else stop();
+    watchExpiry(value.expires);
   }
   panel.querySelector('[data-analytics-accept]').addEventListener('click', () => choose('accepted'));
   panel.querySelector('[data-analytics-deny]').addEventListener('click', () => choose('denied'));
@@ -92,9 +92,13 @@
     if (value?.choice === 'accepted') start(value.expires);
     else stop();
     panel.hidden = Boolean(value);
+    if (value) watchExpiry(value.expires);
   });
+  window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
   const choice = readChoice();
   if (choice?.choice === 'accepted') start(choice.expires);
   else clearCookies();
   panel.hidden = Boolean(choice);
+  if (choice) watchExpiry(choice.expires);
 })();
+
