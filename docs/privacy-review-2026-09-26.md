@@ -16,12 +16,12 @@
 - Betreiber bestätigt Abschluss der Standardverträge mit den eingesetzten Anbietern. united-domains-AVV Version 1.5.11 liegt für wescaleIT AG vor, einschließlich Unterauftragnehmern und TOMs. Anlage 2, Abschnitt 4.1 nennt für die Auftragsverarbeitung ausschließlich die EU. Der vorgelegte Vertrag wird nicht in das Repository übernommen.
 - Tally: Standard-DPA als Vertragsgrundlage bestätigt. Laut Tally wird er bei professioneller Nutzung mit den Kontobedingungen angenommen; eine separate Unterschrift ist nicht erforderlich. Gilt für die Tally-Nutzung bei CISO2Hero und Silverback; nicht für den entfernten Psoydo-Dienst Typeform.
 - Google: Abschluss der Standardverträge laut Betreiber; keine gesonderte Kontrolle des Annahmestatus im Google-Konto durchgeführt.
-- Analytics-Screenshot: Ereignisdaten 2 Monate, Nutzerdaten 14 Monate, Zurücksetzen bei neuer Nutzeraktivität aktiviert. Property-Name und Mess-ID sind im Bild nicht sichtbar. Diese Werte werden bis zur Zuordnung nicht pauschal in alle vier Datenschutzerklärungen übernommen. Cookie-Laufzeit und Kontoeinstellung sind verschiedene Fristen.
+- Analytics: Betreiber bestätigt am 26. September 2026 die Screenshot-Einstellungen für alle vier Properties: Ereignisdaten 2 Monate, Nutzerdaten 14 Monate, Zurücksetzen bei neuer Nutzeraktivität aktiviert. Die Datenschutzerklärungen nennen diese Fristen, die Verlängerung für Nutzerkennungen, den monatlichen Löschlauf und die Ausnahme aggregierter Berichte. Google ordnet Schlüsselereignisdaten der Nutzerdatenfrist zu. Cookie-Laufzeit und Kontoeinstellung bleiben getrennt beschrieben.
+- Datenschutzbeauftragter: Bestellung und Kontaktadresse datenschutz@wescaleit.com am 26. September 2026 vom Betreiber bestätigt; in allen vier Datenschutzerklärungen einheitlich angegeben.
 
 ## Verbleibende Prüfpunkte
 
-- Gelten die abgebildeten GA4-Aufbewahrungseinstellungen für alle vier Properties? Mess-IDs: wescaleIT G-7QYEF752NM, Psoydo G-EYFT82SFN7, CISO2Hero G-2Z0DKLDG8P, Silverback G-RWGM8X6QGH. Anschließend konkrete serverseitige Fristen ergänzen. Datenfreigaben, Ads-Verknüpfungen und erweiterte Messung sind damit nicht geprüft.
-- Ist ein Datenschutzbeauftragter bestellt und ist datenschutz@wescaleit.com dessen bestätigte Kontaktadresse? Psoydo enthält bereits diese Aussage; die übrigen Texte sind nach Bestätigung abzugleichen.
+- Datenfreigaben, Ads-Verknüpfungen und erweiterte Messung im Google-Konto sind nicht geprüft; die Bestätigung der Aufbewahrungsfristen ersetzt diese Kontoprüfung nicht.
 
 ## Prüfung
 
