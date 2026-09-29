@@ -6,6 +6,7 @@ from urllib.request import Request, urlopen
 
 origin = 'https://www.silverback-network.com'
 paths = ('index.html', 'datenschutz.html', 'impressum.html', 'analytics.js',
+         'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html',
          'styles.css', 'robots.txt', 'sitemap.xml', 'assets/silverback-dark.png')
 for path in paths:
     expected = hashlib.sha256((Path('dist') / path).read_bytes()).hexdigest()
@@ -31,3 +32,4 @@ for url in ('http://silverback-network.com/', 'https://silverback-network.com/',
             raise SystemExit('Set the domain redirect to ' + origin + '/; currently: ' + response.url)
     print('PASS canonical redirect:', url)
 print('Public Silverback website verified successfully.')
+

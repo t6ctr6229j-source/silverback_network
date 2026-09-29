@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const key = 'silverback.analytics-consent.v1';
-  const origin = 'https://silverback-network.com';
+  const origin = 'https://www.silverback-network.com';
   const root = path.resolve(__dirname, '../dist');
   const context = await browser.newContext();
   const google = [];
@@ -19,6 +19,7 @@ const assert = require('node:assert/strict');
       await route.fulfill({ contentType: 'text/javascript', body: 'window.analyticsTestLoaded = true;' });
       return;
     }
+    if (url.hostname === 'tally.so') { await route.fulfill({ contentType: 'text/html', body: '<p>Mock form for consent check</p>' }); return; }
     assert.equal(url.origin, origin, 'Unexpected external request: ' + url.origin);
     const file = path.resolve(root, '.' + (url.pathname === '/' ? '/index.html' : url.pathname));
     assert.ok(file.startsWith(root + path.sep));
@@ -44,6 +45,42 @@ const assert = require('node:assert/strict');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, 'Horizontal overflow at ' + width);
   }
 
+  // The FAQ schema must describe exactly the visible questions and answers.
+  const faq = await page.evaluate(() => {
+    const graph = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent)['@graph'];
+    return { schema: graph.find(x => x['@type'] === 'FAQPage').mainEntity.map(x => [x.name, x.acceptedAnswer.text]),
+      visible: [...document.querySelectorAll('#fragen details')].map(x => [x.querySelector('summary').childNodes[0].textContent, x.querySelector('p').textContent]) };
+  });
+  assert.ok(faq.visible.length >= 5);
+  assert.deepEqual(faq.schema, faq.visible);
+  assert.equal(await page.locator('.form-embed iframe').count(), 0);
+  for (const id of ['projekt-formular', 'experten-formular']) {
+    await page.locator('#' + id + ' .form-load').click();
+    assert.equal(await page.locator('.form-embed iframe').count(), 1, 'Only the chosen form loads');
+    await page.locator('#' + id + ' .form-unload').click();
+    assert.equal(await page.locator('.form-embed iframe').count(), 0);
+  }
+  await fs.mkdir('qa-screenshots', { recursive: true });
+  for (const file of ['index.html', 'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html']) {
+    await page.goto(origin + '/' + file);
+    assert.equal(await page.locator('h1').count(), 1);
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), origin + (file === 'index.html' ? '/' : '/' + file));
+    const links = await page.locator('a[href]').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
+    for (const href of links.filter(href => !/^(https?:|mailto:|tel:)/.test(href))) {
+      const [target, fragment] = href.split('#');
+      const content = await fs.readFile(path.join(root, target || file), 'utf8');
+      if (fragment) assert.ok(content.includes('id="' + fragment + '"'), 'Missing target: ' + href);
+    }
+    await page.locator('script[type="application/ld+json"]').evaluateAll(nodes => nodes.forEach(n => JSON.parse(n.textContent)));
+    for (const width of [1440, 1024, 800, 390, 320]) {
+      await page.setViewportSize({ width, height: 1000 });
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, file + ' overflows at ' + width);
+      if (width === 1440 || width === 390) {
+        await page.screenshot({ path: 'qa-screenshots/' + file + '-' + width + '.png', fullPage: true, animations: 'disabled' });
+      }
+    }
+  }
+  await page.goto(origin);
   await page.click('[data-analytics-settings]');
   await page.click('[data-analytics-accept]');
   await page.waitForFunction(() => window.analyticsTestLoaded);
@@ -90,3 +127,4 @@ const assert = require('node:assert/strict');
   await browser.close();
   console.log('PASS: consent, rejection, withdrawal, storage expiry, cross-tab withdrawal, legal pages, desktop and mobile layout.');
 })().catch(error => { console.error(error); process.exit(1); });
+
