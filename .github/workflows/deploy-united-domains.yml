@@ -16,6 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check JavaScript
         run: |
+          python3 scripts/check_authorship.py
           node --check dist/app.js
           node --check dist/analytics.js
       - name: Install browser for consent and layout checks
@@ -42,4 +43,5 @@ jobs:
         run: /usr/bin/python3 scripts/deploy-sftp.py
       - name: Verify public HTTPS website
         run: python3 scripts/verify-public.py
+
 
