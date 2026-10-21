@@ -1,0 +1,34 @@
+name: Verify Silverback nameserver delegation
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/verify-dns-delegation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  query-public-dns:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check authoritative nameservers via two independent resolvers
+        shell: bash
+        run: |
+          set -euo pipefail
+          for service in \
+            'https://dns.google/resolve?name=silverback-network.com&type=NS' \
+            'https://cloudflare-dns.com/dns-query?name=silverback-network.com&type=NS'; do
+            echo "Resolver: $service"
+            tmp="$(mktemp)"
+            curl -fsSL --retry 3 --max-time 20 -H 'accept: application/dns-json' "$service" -o "$tmp"
+            python3 - "$tmp" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding='utf-8') as file:
+              payload = json.load(file)
+          ns = {x['data'].lower().rstrip('.') for x in payload.get('Answer', []) if x.get('type') == 2}
+          expected = {'quinton.ns.cloudflare.com', 'savanna.ns.cloudflare.com'}
+          print('Public nameservers:', ', '.join(sorted(ns)) if ns else '(none)')
+          print('DELEGATION:', 'ACTIVE AT THIS RESOLVER' if ns == expected else 'PENDING / DOES NOT MATCH CLOUDFLARE YET')
+          PY
+            rm -f "$tmp"
+          done
