@@ -3,8 +3,8 @@
 const { chromium } = require('playwright');
 
 const websites = [
-  { name: 'wescaleIT Kontakt', url: 'https://wescaleit.com/kontakt', selector: '.form-load', count: 1 },
-  { name: 'Silverback Kontakt', url: 'https://www.silverback-network.com/', selector: '.form-load', count: 2 },
+  { name: 'wescaleIT Kontakt', url: 'https://wescaleit.com/kontakt', selector: '[data-form-load]', container: '#contact-form-embed', count: 1 },
+  { name: 'Silverback Kontakt', url: 'https://www.silverback-network.com/', selector: '.form-load', container: '.form-embed', count: 2 },
 ];
 
 (async () => {
@@ -20,7 +20,7 @@ const websites = [
       if (count < site.count) throw new Error(site.name + ': expected ' + site.count + ' consent-gated forms, got ' + count);
       for (let i = 0; i < site.count; i++) {
         await buttons.nth(i).click({ force: true });
-        const parent = i === 0 ? page.locator('.form-embed').first() : page.locator('.form-embed').nth(i);
+        const parent = page.locator(site.container).nth(i);
         const iframe = parent.locator('iframe');
         await iframe.waitFor({ state: 'attached', timeout: 20000 });
         const frame = await iframe.elementHandle().then(el => el.contentFrame());
