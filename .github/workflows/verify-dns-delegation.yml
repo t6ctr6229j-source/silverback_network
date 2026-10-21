@@ -1,0 +1,69 @@
+name: Verify Silverback nameserver delegation
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - '.github/workflows/verify-dns-delegation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  query-public-dns:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check authoritative nameservers via two independent resolvers
+        shell: bash
+        run: |
+          set -euo pipefail
+          for service in \
+            'https://dns.google/resolve?name=silverback-network.com&type=NS' \
+            'https://cloudflare-dns.com/dns-query?name=silverback-network.com&type=NS'; do
+            echo "Resolver: $service"
+            tmp="$(mktemp)"
+            curl -fsSL --retry 3 --max-time 20 -H 'accept: application/dns-json' "$service" -o "$tmp"
+            python3 - "$tmp" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding='utf-8') as file:
+              payload = json.load(file)
+          ns = {x['data'].lower().rstrip('.') for x in payload.get('Answer', []) if x.get('type') == 2}
+          expected = {'quinton.ns.cloudflare.com', 'savanna.ns.cloudflare.com'}
+          print('Public nameservers:', ', '.join(sorted(ns)) if ns else '(none)')
+          print('DELEGATION:', 'ACTIVE AT THIS RESOLVER' if ns == expected else 'PENDING / DOES NOT MATCH CLOUDFLARE YET')
+          PY
+            rm -f "$tmp"
+          done
+      - name: Probe live hosting and certificate without making changes
+        shell: bash
+        run: |
+          set -uo pipefail
+          for url in \
+            'https://www.silverback-network.com/' \
+            'https://www.silverback-network.com/datenschutz.html' \
+            'https://www.silverback-network.com/no-such-silverback-path-98427' \
+            'https://silverback-network.com/test-canonical?from=qa'; do
+            echo "URL: $url"
+            curl -sS -L --max-redirs 5 --max-time 25 --output /tmp/live-body --dump-header /tmp/live-headers --write-out 'HTTP=%{http_code} EFFECTIVE=%{url_effective} REMOTE_IP=%{remote_ip} TLS=%{ssl_verify_result}\n' "$url" || echo 'NOT READY: curl failed'
+            grep -iE '^(server:|cf-ray:|x-robots-tag:|content-security-policy:|location:|HTTP/)' /tmp/live-headers | tail -n 12 || true
+          done
+      - name: Assert production routes, canonical redirect and privacy hosting notice
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://www.silverback-network.com"
+          for route in / /impressum.html /datenschutz.html /styles.css /app.js /analytics.js /robots.txt /sitemap.xml; do
+            code="$(curl --silent --show-error --location --max-time 25 --retry 3 --output /dev/null --write-out '%{http_code}' "$base$route")"
+            test "$code" = "200" || { echo "FAILED: $route -> $code"; exit 1; }
+          done
+          curl --fail --silent --show-error --location --max-time 25 --dump-header /tmp/silverback-main-headers --output /tmp/silverback-main-body "$base/"
+          if grep -iq '^x-robots-tag:.*noindex' /tmp/silverback-main-headers; then echo 'Production accidentally marked noindex'; exit 1; fi
+          grep -iq 'Silverback' /tmp/silverback-main-body
+          curl --fail --silent --show-error --location --max-time 25 "$base/datenschutz.html" -o /tmp/silverback-privacy
+          grep -q 'Cloudflare Pages' /tmp/silverback-privacy || { echo 'Privacy notice missing Cloudflare Pages'; exit 1; }
+          missing="$(curl --silent --show-error --max-time 25 --output /dev/null --write-out '%{http_code}' "$base/silverback-path-that-does-not-exist-6741")"
+          test "$missing" = "404" || { echo "Expected 404, got $missing"; exit 1; }
+          curl --silent --show-error --head --max-time 25 'https://silverback-network.com/canonical-check?source=ci' -o /tmp/silverback-apex
+          grep -qiE '^HTTP/.* 301' /tmp/silverback-apex || { echo 'Expected apex permanent redirect'; exit 1; }
+          grep -qiF 'location: https://www.silverback-network.com/canonical-check?source=ci' /tmp/silverback-apex || { echo 'Apex redirect lost path or query'; exit 1; }
+          echo 'PASS: production Pages website, HTTPS, robots, privacy, canonical redirects and error response'
