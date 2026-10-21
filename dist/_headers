@@ -2,10 +2,15 @@
 # Keep Tally iframe and GA4 consent behaviour functional.
 # Tighten script-src after verifying the Preview and all consent paths.
 /*
-  X-Robots-Tag: noindex, nofollow
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Strict-Transport-Security: max-age=31536000
   Content-Security-Policy: base-uri 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests
+# Prevent staging domains from being indexed without blocking the public custom domain.
+https://silverback-network.pages.dev/*
+  X-Robots-Tag: noindex, nofollow
+
+https://:version.silverback-network.pages.dev/*
+  X-Robots-Tag: noindex, nofollow
