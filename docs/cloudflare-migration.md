@@ -35,14 +35,14 @@
 - Staging Pages production branch: `security/hardening-2026-10-21` until the PR is reviewed and merged.
 - Cloudflare Pages build: `sh scripts/build-cloudflare-pages.sh`, output: `cf-dist`.
 - Staging address: `https://silverback-network.pages.dev/`; public custom domain is **not** attached.
-- The `dist/_headers` file currently includes `X-Robots-Tag: noindex, nofollow` for safe staging. **Remove this header in a follow-up reviewed commit before launching the real domain**. Do not index the test site.
+- `dist/_headers` scopes `X-Robots-Tag: noindex, nofollow` to `silverback-network.pages.dev` and versioned Pages staging subdomains only. The future custom production domain must not inherit noindex; verify this after adding the custom domain.
 - Staging build configuration should be changed to production branch `main` only after merging and fully verifying this PR; otherwise the `main` branch lacks the build script.
 
 ## DNS comparison verified against United Domains (2026-10-21)
 - Compared against the provided United Domains DNS overview for all subdomains: eight shown DNS records match the eight imported Cloudflare records.
 - Four web A/AAAA records: apex and www point to the United Domains origin. In the **pending** Cloudflare zone these are now **DNS-only** to avoid premature proxying during nameserver delegation.
 - MX remains with United Domains, priorities 10/20, DNS-only. SPF remains an `_smtp.udag.de` include. Google verification TXT preserved. **Do not replace these with Microsoft 365 defaults**.
-- Screenshot shows no CNAME, SRV, CAA or TLSA records, and suggests DNSSEC is not enabled at United Domains. Cloudflare's own DNSSEC status is disabled; a **parent-zone DS lookup is still mandatory**.
+- Screenshot shows no CNAME, SRV, CAA or TLSA records, and suggests DNSSEC is not enabled at United Domains. Cloudflare's own DNSSEC status is disabled; parent-zone DS lookups were subsequently performed and both public resolvers reported no DS record on 2026-10-21. Recheck immediately before cutover.
 - Original DNS TTLs are 600 seconds for web addresses and TXT and 3600 seconds for MX. Cloudflare's matching record contents are correct with automatic TTL; no functional DNS record data discrepancies were observed.
 - DNSSEC check is automated in `.github/workflows/cloudflare-dnssec-preflight.yml`, querying two independent public recursive resolver endpoints. Any DS entry is a manual block before cutover.
-- Do not modify the registrar nameservers until the website preview and Tally forms are manually reviewed, Cloudflare custom domain cutover is planned, and the staging-only `noindex` header is removed or replaced by host-scoped controls.
+- Do not modify the registrar nameservers until the website preview and Tally forms are manually reviewed, Cloudflare custom domain cutover is planned, and the host-scoped noindex rule is verified not to apply to the custom production domain.
