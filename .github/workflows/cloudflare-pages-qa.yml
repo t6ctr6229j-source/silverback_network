@@ -1,0 +1,54 @@
+name: Check Cloudflare Pages package
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build static Cloudflare Pages output
+        run: sh scripts/build-cloudflare-pages.sh
+      - name: Verify important files and security baseline
+        run: |
+          test -s cf-dist/index.html
+          test -s cf-dist/impressum.html
+          test -s cf-dist/datenschutz.html
+          test -s cf-dist/robots.txt
+          test -s cf-dist/sitemap.xml
+          test ! -e cf-dist/.htaccess
+          grep -q 'X-Content-Type-Options: nosniff' cf-dist/_headers
+          grep -q 'Content-Security-Policy:' cf-dist/_headers
+          node --check cf-dist/app.js
+          node --check cf-dist/analytics.js
+
+  smoke:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live Cloudflare Pages staging responses
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://silverback-network.pages.dev"
+          # The independent Pages deploy runs in parallel with GitHub Actions.
+          for attempt in $(seq 1 16); do
+            missing=$(curl --silent --show-error --location --max-time 20 --output /dev/null --write-out '%{http_code}' "$base/not-a-real-silverback-page-404-check" || true)
+            if [ "$missing" = "404" ]; then break; fi
+            sleep 5
+          done
+          if [ "$missing" != "404" ]; then echo "Missing 404 status from Pages: $missing"; exit 1; fi
+          for route in / /impressum.html /datenschutz.html /styles.css /app.js /analytics.js /robots.txt /sitemap.xml; do
+            code=$(curl --silent --show-error --location --retry 3 --max-time 30 --output /dev/null --write-out '%{http_code}' "$base$route")
+            if [ "$code" != "200" ]; then echo "Unexpected HTTP $code at $base$route"; exit 1; fi
+          done
+          curl --fail --silent --show-error --location --retry 3 --max-time 30 --dump-header /tmp/silverback-headers --output /tmp/silverback-index "$base/"
+          grep -iq '^x-robots-tag:.*noindex' /tmp/silverback-headers
+          grep -iq '^x-content-type-options:.*nosniff' /tmp/silverback-headers
+          grep -iq '^content-security-policy:' /tmp/silverback-headers
+          grep -qi 'silverback' /tmp/silverback-index
+          echo "Cloudflare Pages staging responds correctly with security and noindex headers."

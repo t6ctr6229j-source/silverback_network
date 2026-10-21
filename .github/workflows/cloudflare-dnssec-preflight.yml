@@ -1,0 +1,38 @@
+name: Cloudflare DNSSEC preflight
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/cloudflare-dnssec-preflight.yml"
+      - "docs/cloudflare-migration.md"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check-parent-ds:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check live DNSSEC DS at public recursive resolvers
+        shell: bash
+        run: |
+          set -euo pipefail
+          for svc in 'https://dns.google/resolve?name=silverback-network.com&type=DS' 'https://cloudflare-dns.com/dns-query?name=silverback-network.com&type=DS'; do
+            echo "Checking DNSSEC parent records via $svc"
+            file="$(mktemp)"
+            curl -fsSL --retry 3 --max-time 25 -H "accept: application/dns-json" "$svc" -o "$file"
+            python3 - "$file" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              result = json.load(handle)
+          if result.get("Status") != 0:
+              raise SystemExit(f"DNS lookup error: {result.get('Status')}")
+          ds = [a for a in result.get("Answer", []) if a.get("type") == 43]
+          if ds:
+              print("BLOCKED: Found active parent-zone DS records. Plan DNSSEC migration with registrar before changing nameservers.")
+              for record in ds:
+                  print(record.get("data"))
+              raise SystemExit(1)
+          print("PASS: No DS records seen at this resolver")
+          PY
+            rm -f "$file"
+          done

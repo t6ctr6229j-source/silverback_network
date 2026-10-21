@@ -6,23 +6,23 @@ import re
 from pathlib import Path
 import paramiko
 
-required = ('UD_SFTP_HOST', 'UD_SFTP_USER', 'UD_SFTP_PASSWORD')
+required = ('UD_SFTP_HOST', 'UD_SFTP_USER', 'UD_SFTP_PASSWORD', 'UD_SFTP_KNOWN_HOSTS')
 missing = [name for name in required if not os.environ.get(name)]
 if missing:
     raise SystemExit('Missing repository secrets: ' + ', '.join(missing))
 
 client = paramiko.SSHClient()
 client.load_system_host_keys()
-# Optional pinning; otherwise trust this newly configured host on first connection.
-known_hosts = os.environ.get('UD_SFTP_KNOWN_HOSTS', '').strip()
-if known_hosts:
-    from tempfile import NamedTemporaryFile
-    with NamedTemporaryFile(mode='w') as file:
-        file.write(known_hosts + '\n')
-        file.flush()
-        client.load_host_keys(file.name)
-else:
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+# Fail closed: trust only independently verified SSH host keys supplied by secret.
+known_hosts = os.environ['UD_SFTP_KNOWN_HOSTS'].strip()
+if not known_hosts:
+    raise SystemExit('A provider-verified UD_SFTP_KNOWN_HOSTS entry is mandatory')
+from tempfile import NamedTemporaryFile
+with NamedTemporaryFile(mode='w', encoding='utf-8') as file:
+    file.write(known_hosts + '\n')
+    file.flush()
+    client.load_host_keys(file.name)
+client.set_missing_host_key_policy(paramiko.RejectPolicy())
 
 client.connect(os.environ['UD_SFTP_HOST'], port=int(os.environ.get('UD_SFTP_PORT') or '22'),
                username=os.environ['UD_SFTP_USER'], password=os.environ['UD_SFTP_PASSWORD'],
@@ -59,7 +59,10 @@ try:
                 except FileNotFoundError:
                     previous = b''
                 # Keep all existing hosting rules; replace only our managed block.
-                previous = re.sub(rb'# BEGIN SILVERBACK CANONICAL\r?\n.*?# END SILVERBACK CANONICAL\r?\n?', b'', previous, flags=re.S)
+                # Remove only our managed sections; preserve unrelated provider rules.
+                for block in (b'CANONICAL', b'SECURITY'):
+                    pattern = b'# BEGIN SILVERBACK ' + block + rb'\r?\n.*?# END SILVERBACK ' + block + rb'\r?\n?'
+                    previous = re.sub(pattern, b'', previous, flags=re.S)
                 with sftp.open(temporary, 'wb') as output:
                     output.write(file.read_bytes().rstrip() + b'\n' + previous)
             else:
