@@ -1,10 +1,8 @@
 name: Check Cloudflare Pages package
 on:
+  push:
+    branches: [main]
   pull_request:
-    paths:
-      - "dist/**"
-      - "scripts/build-cloudflare-pages.sh"
-      - ".github/workflows/cloudflare-pages-qa.yml"
   workflow_dispatch:
 permissions:
   contents: read
