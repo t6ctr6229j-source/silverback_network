@@ -32,3 +32,16 @@ jobs:
           PY
             rm -f "$tmp"
           done
+      - name: Probe live hosting and certificate without making changes
+        shell: bash
+        run: |
+          set -uo pipefail
+          for url in \
+            'https://www.silverback-network.com/' \
+            'https://www.silverback-network.com/datenschutz.html' \
+            'https://www.silverback-network.com/no-such-silverback-path-98427' \
+            'https://silverback-network.com/test-canonical?from=qa'; do
+            echo "URL: $url"
+            curl -sS -L --max-redirs 5 --max-time 25 --output /tmp/live-body --dump-header /tmp/live-headers --write-out 'HTTP=%{http_code} EFFECTIVE=%{url_effective} REMOTE_IP=%{remote_ip} TLS=%{ssl_verify_result}\n' "$url" || echo 'NOT READY: curl failed'
+            grep -iE '^(server:|cf-ray:|x-robots-tag:|content-security-policy:|location:|HTTP/)' /tmp/live-headers | tail -n 12 || true
+          done
