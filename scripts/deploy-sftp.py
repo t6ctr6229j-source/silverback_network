@@ -59,7 +59,10 @@ try:
                 except FileNotFoundError:
                     previous = b''
                 # Keep all existing hosting rules; replace only our managed block.
-                previous = re.sub(rb'# BEGIN SILVERBACK CANONICAL\r?\n.*?# END SILVERBACK CANONICAL\r?\n?', b'', previous, flags=re.S)
+                # Remove only our managed sections; preserve unrelated provider rules.
+                for block in (b'CANONICAL', b'SECURITY'):
+                    pattern = b'# BEGIN SILVERBACK ' + block + rb'\r?\n.*?# END SILVERBACK ' + block + rb'\r?\n?'
+                    previous = re.sub(pattern, b'', previous, flags=re.S)
                 with sftp.open(temporary, 'wb') as output:
                     output.write(file.read_bytes().rstrip() + b'\n' + previous)
             else:
