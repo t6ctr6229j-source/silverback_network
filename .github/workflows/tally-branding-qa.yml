@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'scripts/tally-branding-qa.cjs'
+      - 'scripts/tally-embed-qa.cjs'
       - '.github/workflows/tally-branding-qa.yml'
   workflow_dispatch:
 permissions:
@@ -19,3 +20,5 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Read-only smoke test all published Tally forms
         run: node scripts/tally-branding-qa.cjs
+      - name: Check consent-gated iframe versions on public websites
+        run: node scripts/tally-embed-qa.cjs
