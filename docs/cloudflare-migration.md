@@ -37,3 +37,12 @@
 - Staging address: `https://silverback-network.pages.dev/`; public custom domain is **not** attached.
 - The `dist/_headers` file currently includes `X-Robots-Tag: noindex, nofollow` for safe staging. **Remove this header in a follow-up reviewed commit before launching the real domain**. Do not index the test site.
 - Staging build configuration should be changed to production branch `main` only after merging and fully verifying this PR; otherwise the `main` branch lacks the build script.
+
+## DNS comparison verified against United Domains (2026-10-21)
+- Compared against the provided United Domains DNS overview for all subdomains: eight shown DNS records match the eight imported Cloudflare records.
+- Four web A/AAAA records: apex and www point to the United Domains origin. In the **pending** Cloudflare zone these are now **DNS-only** to avoid premature proxying during nameserver delegation.
+- MX remains with United Domains, priorities 10/20, DNS-only. SPF remains an `_smtp.udag.de` include. Google verification TXT preserved. **Do not replace these with Microsoft 365 defaults**.
+- Screenshot shows no CNAME, SRV, CAA or TLSA records, and suggests DNSSEC is not enabled at United Domains. Cloudflare's own DNSSEC status is disabled; a **parent-zone DS lookup is still mandatory**.
+- Original DNS TTLs are 600 seconds for web addresses and TXT and 3600 seconds for MX. Cloudflare's matching record contents are correct with automatic TTL; no functional DNS record data discrepancies were observed.
+- DNSSEC check is automated in `.github/workflows/cloudflare-dnssec-preflight.yml`, querying two independent public recursive resolver endpoints. Any DS entry is a manual block before cutover.
+- Do not modify the registrar nameservers until the website preview and Tally forms are manually reviewed, Cloudflare custom domain cutover is planned, and the staging-only `noindex` header is removed or replaced by host-scoped controls.
