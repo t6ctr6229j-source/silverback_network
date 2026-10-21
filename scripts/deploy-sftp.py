@@ -13,7 +13,7 @@ if missing:
 
 client = paramiko.SSHClient()
 client.load_system_host_keys()
-# Optional pinning; otherwise trust this newly configured host on first connection.
+# Fail closed: trust only independently verified SSH host keys supplied by secret.
 known_hosts = os.environ['UD_SFTP_KNOWN_HOSTS'].strip()
 if not known_hosts:
     raise SystemExit('A provider-verified UD_SFTP_KNOWN_HOSTS entry is mandatory')
