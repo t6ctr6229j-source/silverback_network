@@ -13,7 +13,7 @@
 - Output directory: `cf-dist`, root directory: repository root.
 - Production branch eventually: `main`; do not attach the public custom domain yet.
 - The build copies `dist/` while omitting `.htaccess`. Pages reads `dist/_headers` from the output.
-- Avoid two concurrent production publishing systems after cutover; disable the legacy united-domains upload only after successful DNS migration.
+- Avoid two concurrent production publishing systems. The legacy united-domains GitHub workflow retains automated tests but its SFTP upload only runs on `workflow_dispatch`. Keep existing hosted files unchanged until the DNS cutover has been verified.
 
 ## Before cutover: non-negotiable checks
 1. Compare **every** authoritative DNS record, including apex/www A, AAAA, CNAME, MX, SPF, DKIM selectors, DMARC, TXT verification, SRV, CAA, any other subdomains, and any active DS records at the registrar. An automatic Cloudflare scan is not sufficient evidence that all records were discovered. Preserve non-web records as DNS-only.
@@ -28,7 +28,7 @@
 - Apache `.htaccess` only redirects the bare host to `www.silverback-network.com`; Cloudflare Pages does not execute it. Implement host-specific redirect in Cloudflare Redirect Rules **only at cutover**, not as a path-only `_redirects` rule that would redirect `pages.dev` previews to production.
 - `dist/_headers` carries the baseline security headers on Pages static asset responses. The United Domains `.htaccess` is maintained separately until decommissioning.
 - Existing Tally forms rely on user action and validate inbound postMessage origins; verify iframe support after CSP changes.
-- GitHub PR #3 contains server and deployment hardening. It requires `UD_SFTP_KNOWN_HOSTS` before merging; do not disable validation as a workaround.
+- GitHub PR #3 contains server and deployment hardening. Automatic SFTP uploads from `main` are disabled; the manual United Domains rollback upload still requires a verified `UD_SFTP_KNOWN_HOSTS` secret. Do not bypass host-key verification.
 
 ## Cloudflare Pages staging instance
 - Pages project `silverback-network` connected to `t6ctr6229j-source/silverback_network`.
@@ -46,3 +46,12 @@
 - Original DNS TTLs are 600 seconds for web addresses and TXT and 3600 seconds for MX. Cloudflare's matching record contents are correct with automatic TTL; no functional DNS record data discrepancies were observed.
 - DNSSEC check is automated in `.github/workflows/cloudflare-dnssec-preflight.yml`, querying two independent public recursive resolver endpoints. Any DS entry is a manual block before cutover.
 - Do not modify the registrar nameservers until the website preview and Tally forms are manually reviewed, Cloudflare custom domain cutover is planned, and the host-scoped noindex rule is verified not to apply to the custom production domain.
+
+## Owner's approval and email clarification
+- Visual/mobile Cloudflare test site and the two opt-in Tally embeds were explicitly approved on 2026-10-21.
+- The owner confirms **no operational mailbox uses `@silverback-network.com`**. Staff use `@wescaleit.com` mailboxes.
+- Nonetheless, existing United Domains MX and SPF records are preserved for consistency and future rollback. Neither Cloudflare Pages nor this migration changes the DNS zone or delivery of `wescaleit.com`.
+- A Cloudflare **zone redirect** redirects `silverback-network.com` to `www.silverback-network.com` preserving paths and queries when both hostnames are ultimately proxied. Pending-zone DNS-only entries mean this redirect is not yet live.
+- Cloudflare zone remains `pending`; registrar nameserver switch is required before attaching production custom domains. The imported web A/AAAA entries are DNS-only and still point to United Domains, which prevents accidental premature traffic migration when the nameserver delegation first changes.
+- After zone activation, register `www.silverback-network.com` (and apex if desired) as Cloudflare Pages custom domain(s), switch the corresponding A/AAAA entries to Pages-compatible proxied CNAME(s), and verify certificates, hostname redirect, noindex, analytics and form behavior.
+- Hosting privacy notice currently names United Domains. Update the website's **Hosting** notice to include Cloudflare Pages with accurate processing details as part of Pages cutover. Do not assert that a DPA exists unless verified with the customer.
