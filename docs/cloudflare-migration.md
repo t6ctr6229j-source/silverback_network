@@ -29,3 +29,11 @@
 - `dist/_headers` carries the baseline security headers on Pages static asset responses. The United Domains `.htaccess` is maintained separately until decommissioning.
 - Existing Tally forms rely on user action and validate inbound postMessage origins; verify iframe support after CSP changes.
 - GitHub PR #3 contains server and deployment hardening. It requires `UD_SFTP_KNOWN_HOSTS` before merging; do not disable validation as a workaround.
+
+## Cloudflare Pages staging instance
+- Pages project `silverback-network` connected to `t6ctr6229j-source/silverback_network`.
+- Staging Pages production branch: `security/hardening-2026-10-21` until the PR is reviewed and merged.
+- Cloudflare Pages build: `sh scripts/build-cloudflare-pages.sh`, output: `cf-dist`.
+- Staging address: `https://silverback-network.pages.dev/`; public custom domain is **not** attached.
+- The `dist/_headers` file currently includes `X-Robots-Tag: noindex, nofollow` for safe staging. **Remove this header in a follow-up reviewed commit before launching the real domain**. Do not index the test site.
+- Staging build configuration should be changed to production branch `main` only after merging and fully verifying this PR; otherwise the `main` branch lacks the build script.
