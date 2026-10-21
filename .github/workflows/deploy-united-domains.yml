@@ -34,6 +34,8 @@ jobs:
       - name: Install SFTP client
         run: sudo apt-get update -qq && sudo apt-get install -y python3-paramiko
       - name: Upload to United Domains
+        # During Cloudflare migration, preserve manual rollback without auto-updating legacy origin on push.
+        if: github.event_name == 'workflow_dispatch'
         env:
           UD_SFTP_HOST: ${{ secrets.UD_SFTP_HOST }}
           UD_SFTP_PORT: ${{ secrets.UD_SFTP_PORT }}
@@ -42,6 +44,7 @@ jobs:
           UD_SFTP_KNOWN_HOSTS: ${{ secrets.UD_SFTP_KNOWN_HOSTS }}
         run: /usr/bin/python3 scripts/deploy-sftp.py
       - name: Verify public HTTPS website
+        if: github.event_name == 'workflow_dispatch'
         run: python3 scripts/verify-public.py
 
 
