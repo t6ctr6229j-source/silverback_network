@@ -112,3 +112,20 @@
 
 /* Visible authorship and article dates share the same source as JSON-LD. */
 .author-credit{margin:24px 0 30px;padding:18px 0;border-top:1px solid currentColor;border-bottom:1px solid currentColor;max-width:78ch}.author-credit .author-credit-meta{font-size:14px;line-height:1.7;margin:0 0 8px}.author-credit .author-credit-bio{font-size:15px;line-height:1.65;margin:0;max-width:72ch}.author-credit a{text-decoration:underline;text-underline-offset:3px}.author-credit time{white-space:nowrap}@media(max-width:600px){.author-credit .author-credit-meta{font-size:12px}.author-credit .author-credit-bio{font-size:14px}}
+
+
+/* QA 2026-10-28: one shared enquiry instead of two competing Tally forms. */
+.forms .form-grid{grid-template-columns:minmax(0,1fr);max-width:900px;margin:48px auto 0}
+.forms .form-card-unified{
+  display:block!important;grid-row:auto!important;grid-column:auto!important;
+  width:100%;min-width:0;max-width:100%;box-sizing:border-box;
+  padding-top:32px;
+}
+.forms .form-card-unified>p:not(.eyebrow){max-width:740px;font-size:clamp(16px,1.5vw,19px)}
+.forms .form-card-unified h3{font-size:clamp(30px,4vw,52px);max-width:740px;line-height:1.1;overflow-wrap:break-word}
+.forms .form-card-unified .form-consent{margin-top:28px;padding:clamp(22px,3vw,34px);max-width:100%;box-sizing:border-box}
+.forms .form-card-unified .form-consent p{max-width:680px}
+.forms .form-card-unified .form-embed{max-width:780px;margin-inline:auto}
+.forms .form-card-unified .form-fallback{max-width:100%}
+.form-anchor{position:relative;display:block;scroll-margin-top:35px;height:0}
+@media(max-width:760px){.forms .form-grid{margin-top:32px}.forms .form-card-unified{padding-top:25px}.forms .form-card-unified h3{font-size:clamp(29px,8vw,42px)}}
