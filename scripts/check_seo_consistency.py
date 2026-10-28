@@ -87,4 +87,19 @@ sitemap = ET.parse(ROOT / "sitemap.xml").getroot()
 actual_urls = [n.text for n in sitemap.findall(".//{*}loc")]
 if sorted(actual_urls) != sorted(expected_urls) or len(actual_urls) != len(set(actual_urls)):
     raise SystemExit(f"Sitemap does not match six canonical pages: {actual_urls}")
+# One consolidated, published Tally form must serve both audiences.
+homepage = (ROOT / "index.html").read_text(encoding="utf-8")
+if homepage.count('data-form-id="LDDoxJ"') != 1:
+    raise SystemExit("Silverback must expose exactly one shared Tally form")
+if 'href="https://tally.so/r/LDDoxJ"' not in homepage:
+    raise SystemExit("Shared Tally form must have a direct fallback")
+if 'data-form-id="pbgYgP"' in homepage or 'data-form-id="yPO8Od"' in homepage:
+    raise SystemExit("Old dual-form layout was accidentally restored")
+if homepage.count('class="form-card form-card-unified"') != 1:
+    raise SystemExit("Contact form card layout is not unified")
+for filename in PAGES[1:]:
+    html = (ROOT / filename).read_text(encoding="utf-8")
+    if 'index.html#projekt-formular' in html or 'index.html#experten-formular' in html:
+        raise SystemExit(f"{filename}: stale contact deep link")
+
 print(f"PASS: {len(PAGES)} content pages, {len(LEGAL)} legal pages, canonical owner and brand, sitemap.")
