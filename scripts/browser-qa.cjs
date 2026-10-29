@@ -35,14 +35,26 @@ const assert = require('node:assert/strict');
   assert.equal(google.length, 0, 'Analytics must not load after rejection');
   assert.equal(await page.locator('#analytics-consent').isVisible(), false);
 
-  for (const width of [1440, 1024, 800, 390]) {
-    await page.setViewportSize({ width, height: 1000 });
-    const bounds = await page.locator('.form-consent').evaluateAll(nodes => nodes.map(node => ({
-      top: node.getBoundingClientRect().top, left: node.getBoundingClientRect().left
-    })));
-    if (width > 760) assert.ok(Math.abs(bounds[0].top - bounds[1].top) < 1, 'Forms misaligned at ' + width);
-    else assert.ok(bounds[1].top > bounds[0].top, 'Mobile forms must stack');
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, 'Horizontal overflow at ' + width);
+  // One shared Tally form serves both companies and independent experts.
+  assert.equal(await page.locator('.form-card').count(), 1, 'There must be exactly one form card');
+  assert.equal(await page.locator('[data-form-id="LDDoxJ"]').count(), 1,
+    'The unified published Tally form must be used');
+  for (const id of ['anfrage-formular','projekt-formular','experten-formular']) {
+    assert.equal(await page.locator('#'+id).count(), 1, 'Missing existing form anchor '+id);
+  }
+  for (const width of [1440, 1024, 800, 390, 320]) {
+    await page.setViewportSize({width,height:1000});
+    const measures=await page.locator('.form-card').evaluate(el=>{
+      const card=el.getBoundingClientRect();
+      const button=el.querySelector('.form-load').getBoundingClientRect();
+      return {cardLeft:card.left,cardRight:card.right,
+        btnLeft:button.left,btnRight:button.right,btnBottom:button.bottom};
+    });
+    assert.ok(measures.btnLeft >= measures.cardLeft - 2 &&
+      measures.btnRight <= measures.cardRight + 2,
+      'Unified form button must fit at '+width+'px: '+JSON.stringify(measures));
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+      false,'Horizontal overflow at '+width);
   }
 
   // The FAQ schema must describe exactly the visible questions and answers.
@@ -54,12 +66,14 @@ const assert = require('node:assert/strict');
   assert.ok(faq.visible.length >= 5);
   assert.deepEqual(faq.schema, faq.visible);
   assert.equal(await page.locator('.form-embed iframe').count(), 0);
-  for (const id of ['projekt-formular', 'experten-formular']) {
-    await page.locator('#' + id + ' .form-load').click();
-    assert.equal(await page.locator('.form-embed iframe').count(), 1, 'Only the chosen form loads');
-    await page.locator('#' + id + ' .form-unload').click();
-    assert.equal(await page.locator('.form-embed iframe').count(), 0);
-  }
+  assert.equal(await page.locator('.form-fallback a').getAttribute('href'),'https://tally.so/r/LDDoxJ');
+  await page.locator('#anfrage-formular .form-load').click();
+  assert.equal(await page.locator('.form-embed iframe').count(), 1,
+    'Only one shared consent-gated iframe must load');
+  assert.match(await page.locator('.form-embed iframe').getAttribute('src'),
+    /^https:\/\/tally\.so\/embed\/LDDoxJ\?/);
+  await page.locator('#anfrage-formular .form-unload').click();
+  assert.equal(await page.locator('.form-embed iframe').count(), 0);
   await fs.mkdir('qa-screenshots', { recursive: true });
   for (const file of ['index.html', 'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html']) {
     await page.goto(origin + '/' + file);

@@ -78,7 +78,7 @@
     const value = { choice, expires: Date.now() + lifetime };
     try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
     panel.hidden = true;
-    settings.focus();
+    settings.focus({ preventScroll: true });
     if (choice === 'accepted') start(value.expires);
     else stop();
     watchExpiry(value.expires);
