@@ -1,12 +1,11 @@
 // Inspect actual consent-gated Tally iframes on the public brand websites.
-// Production still has two legacy forms until the unified Draft-PR is approved.
-// Pass SILVERBACK_LIVE_FORM_COUNT=1 after the production rollout; preview QA already enforces one.
+// Production uses one shared Silverback enquiry form.
 // Never submit form data or accept analytics cookies.
 const { chromium } = require('playwright');
 
 const websites = [
   { name: 'wescaleIT Kontakt', url: 'https://wescaleit.com/kontakt', selector: '[data-form-load]', container: '#contact-form-embed', decline: '[data-statistics-deny]', count: 1 },
-  { name: 'Silverback Kontakt', url: 'https://www.silverback-network.com/', selector: '.form-load', container: '.form-embed', decline: '[data-analytics-deny]', count: Number(process.env.SILVERBACK_LIVE_FORM_COUNT || 2) },
+  { name: 'Silverback Kontakt', url: 'https://www.silverback-network.com/', selector: '.form-load', container: '.form-embed', decline: '[data-analytics-deny]', count: Number(process.env.SILVERBACK_LIVE_FORM_COUNT || 1) },
 ];
 
 (async () => {
