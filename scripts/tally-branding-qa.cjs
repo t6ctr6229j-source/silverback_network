@@ -6,6 +6,8 @@ const forms = [
   ['wescaleIT Kontakt', 'ja1WdE'],
   ['Silverback Projekt', 'pbgYgP'],
   ['Silverback Experten', 'yPO8Od'],
+  ['Silverback Gemeinsame Anfrage', 'LDDoxJ'],
+  ['Psoydo Pilot', 'KppMYg'],
   ['FCTH Kontakt', '44Z4Mo'],
   ['FCTH Game', '0Q4bE0'],
   ['FCTH Goldenes Ticket', 'jaKaR9'],
@@ -41,5 +43,5 @@ const forms = [
   if (results.some(x => x.status !== 200 || x.badgeCount > 0 || x.mentionsBranding || !x.headingPresent)) {
     throw new Error('At least one published form still shows Tally branding, cannot load, or has missing UI');
   }
-  console.log('PASS: all eight Tally Pro forms have no visible Made with Tally / Powered by Tally badge.');
+  console.log('PASS: all published Tally Pro forms have no visible Made with Tally / Powered by Tally badge.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
