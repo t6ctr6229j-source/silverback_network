@@ -37,6 +37,25 @@ const forms = [
       console.log(JSON.stringify(results[results.length - 1]));
       await page.close();
     }
+    // Regression for the reported Psoydo iframe 404: verify the real embed route,
+    // independently of the normal Tally /r/ URL and without submitting anything.
+    for (const [name,id] of [['Psoydo iframe','KppMYg'],['Silverback unified iframe','LDDoxJ']]) {
+      const page = await browser.newPage({viewport:{width:1100,height:900},locale:'de-DE'});
+      const response = await page.goto('https://tally.so/embed/'+id+'?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1',
+        {waitUntil:'domcontentloaded',timeout:25000});
+      const details = await page.evaluate(() => ({
+        contains404:/Oops, page was not found!|This page doesn't exist/i.test(document.body?.innerText||''),
+        inputCount:document.querySelectorAll('input,textarea,[role="form"]').length,
+        visibleTextLength:(document.body?.innerText||'').length
+      }));
+      const check={name,id,status:response?.status(),...details};
+      console.log(JSON.stringify(check));
+      results.push(check);
+      await page.close();
+      if (check.status !== 200 || check.contains404 || check.visibleTextLength < 75 || check.inputCount < 2) {
+        throw new Error(name+' failed to render its real published embed: '+JSON.stringify(check));
+      }
+    }
   } finally {
     await browser.close();
   }
