@@ -61,10 +61,4 @@ window.addEventListener('message', event => {
   if (Number.isFinite(height) && height > 0) frame.height = String(Math.min(6000, Math.max(400, height)));
 });
 
-const marquee = document.querySelector('.customer-marquee');
-const marqueeToggle = document.querySelector('.marquee-toggle');
-marqueeToggle?.addEventListener('click', () => {
-  const paused = marquee.classList.toggle('is-paused');
-  marqueeToggle.setAttribute('aria-pressed', String(paused));
-  marqueeToggle.textContent = paused ? 'Animation fortsetzen' : 'Animation pausieren';
-});
+// Decorative movement, including the logo strip, shares the control in motion.js.
