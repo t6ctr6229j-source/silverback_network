@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 
 const websites = [
   { name: 'wescaleIT Kontakt', url: 'https://wescaleit.com/kontakt', selector: '[data-form-load]', container: '#contact-form-embed', decline: '[data-statistics-deny]', count: 1 },
-  { name: 'Silverback Kontakt', url: 'https://www.silverback-network.com/', selector: '.form-load', container: '.form-embed', decline: '[data-analytics-deny]', count: 2 },
+  { name: 'Silverback Kontakt', url: 'https://www.silverback-network.com/', selector: '.form-load', container: '.form-embed', decline: '[data-analytics-deny]', count: 1 },
 ];
 
 (async () => {
@@ -23,7 +23,7 @@ const websites = [
       const buttons = page.locator(site.selector);
       await buttons.first().waitFor({ state: 'visible', timeout: 20000 });
       const count = await buttons.count();
-      if (count < site.count) throw new Error(site.name + ': expected ' + site.count + ' consent-gated forms, got ' + count);
+      if (count !== site.count) throw new Error(site.name + ': expected exactly ' + site.count + ' consent-gated forms, got ' + count);
       for (let i = 0; i < site.count; i++) {
         await buttons.nth(i).click({ timeout: 20000 });
         const parent = page.locator(site.container).nth(i);
