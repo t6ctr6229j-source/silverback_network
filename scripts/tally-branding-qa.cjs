@@ -50,7 +50,6 @@ const forms = [
       }));
       const check={name,id,status:response?.status(),...details};
       console.log(JSON.stringify(check));
-      results.push(check);
       await page.close();
       if (check.status !== 200 || check.contains404 || check.visibleTextLength < 75 || check.inputCount < 2) {
         throw new Error(name+' failed to render its real published embed: '+JSON.stringify(check));
