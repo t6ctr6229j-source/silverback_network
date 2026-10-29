@@ -102,4 +102,12 @@ for filename in PAGES[1:]:
     if 'index.html#projekt-formular' in html or 'index.html#experten-formular' in html:
         raise SystemExit(f"{filename}: stale contact deep link")
 
+home = (ROOT / "index.html").read_text(encoding="utf-8")
+assert home.count('class="form-card form-card-unified"') == 1, "Home must have exactly one shared contact form"
+assert home.count('data-form-id="LDDoxJ"') == 1, "Unified Tally form is not linked"
+assert 'https://tally.so/r/LDDoxJ' in home, "Direct form alternative missing"
+assert 'data-form-id="pbgYgP"' not in home and 'data-form-id="yPO8Od"' not in home, "Legacy parallel forms must not be rendered"
+assert all('id="' + x + '"' in home for x in ("anfrage-formular", "projekt-formular", "experten-formular")), "Legacy in-page links must resolve"
+print("PASS: exactly one Silverback enquiry serves companies and experts; both anchor links remain compatible.")
+
 print(f"PASS: {len(PAGES)} content pages, {len(LEGAL)} legal pages, canonical owner and brand, sitemap.")
