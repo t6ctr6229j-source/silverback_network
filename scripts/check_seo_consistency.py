@@ -7,6 +7,7 @@ Physical .html files are retained; public Pages URLs have no .html extension.
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import unquote, urljoin, urlsplit
+import hashlib
 import json
 import xml.etree.ElementTree as ET
 
@@ -22,6 +23,7 @@ OWNED_HOSTS = {"wescaleit.com", "www.wescaleit.com", "ciso2hero.com", "www.ciso2
                "psoydo.com", "www.psoydo.com", "silverback-network.com", "www.silverback-network.com"}
 ROUTES = {"/" if name == "index.html" else "/" + name.removesuffix(".html"): name
           for name in PAGES + LEGAL}
+ANALYTICS_SRC = "analytics.js?v=" + hashlib.sha256((ROOT / "analytics.js").read_bytes()).hexdigest()[:12]
 
 
 class Page(HTMLParser):
@@ -33,6 +35,7 @@ class Page(HTMLParser):
         self.meta = {}
         self.canonicals = []
         self.links = []
+        self.scripts = []
         self.ids = set()
         self.json_scripts = []
         self._json = None
@@ -50,6 +53,8 @@ class Page(HTMLParser):
             self.canonicals.append(attrs.get("href", ""))
         if tag == "a" and "href" in attrs:
             self.links.append(attrs["href"])
+        if tag == "script" and "src" in attrs:
+            self.scripts.append(attrs["src"])
         if "id" in attrs:
             self.ids.add(attrs["id"])
         if tag == "script" and attrs.get("type") == "application/ld+json":
@@ -88,6 +93,8 @@ for route, page in pages.items():
     assert page.meta.get("og:url") == canonical, (route, "og:url")
     assert page.h1 == 1 and page.title.strip() and page.meta.get("description"), (route, "page metadata")
     assert "noindex" not in page.meta.get("robots", "").lower(), (route, "noindex")
+    analytics = [src for src in page.scripts if urlsplit(src).path.split("/")[-1] == "analytics.js"]
+    assert analytics == [ANALYTICS_SRC], (route, "Refresh analytics.js content version on every page", analytics, ANALYTICS_SRC)
 
     for href in page.links:
         target = urlsplit(urljoin(canonical, href))
@@ -139,3 +146,4 @@ for route in list(pages)[1:]:
 
 print("PASS: six extensionless public URLs, matching canonicals/OG/schema/sitemap, links/anchors and shared entities")
 print("PASS: one shared published Tally form with both compatible legacy anchors")
+print("PASS: all six pages reference the current analytics.js content hash")
