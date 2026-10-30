@@ -2,20 +2,35 @@
 
 Statische Website für https://www.silverback-network.com. Design: Aubergine, Limette und Offwhite.
 
-## Website und Vorschau
+## Website und Veröffentlichung
 
-`dist/` enthält die vollständige Website einschließlich aller Bilder und Logos. Kein Build oder Node-Server erforderlich. Lokal: `python -m http.server 8080 --directory dist`.
+`dist/` enthält die Website einschließlich Bilder und Logos. Cloudflare Pages baut den freigegebenen `main`-Stand mit `sh scripts/build-cloudflare-pages.sh` und veröffentlicht `cf-dist/`. Pull Requests dienen der Prüfung; ihr Merge veröffentlicht den neuen Produktionsstand über die bestehende Pages-Integration.
 
-## Google Analytics
+Physische Dateien behalten `.html`; öffentliche Seiten verwenden endungslose URLs. Cloudflare Pages leitet die alten `.html`-Adressen dauerhaft um. Canonical, Open Graph, Schema, Sitemap und interne Links müssen die endgültigen URLs verwenden. Die bestehenden Kontaktanker bleiben erhalten.
 
-GA4-Mess-ID: `G-RWGM8X6QGH`. `dist/analytics.js` lädt Google ausschließlich nach Zustimmung und nur auf silverback-network.com bzw. www.silverback-network.com. In lokalen und ChatGPT-Vorschauen bleibt Analytics aus. Ablehnen, Zustimmen und Widerruf sind auf allen Seiten verfügbar. Auswahl und Analytics-Cookies sind auf höchstens 180 Tage begrenzt; Werbung und Google Signals werden nicht freigegeben. Änderungen der Auswahl werden zwischen offenen Tabs berücksichtigt. Tally wird unabhängig davon nur nach Aktivierung des jeweiligen Formulars geladen.
+Der alte United-Domains-Workflow führt bei `main`-Pushes weiterhin QA aus. Sein SFTP-Upload läuft ausschließlich nach einem ausdrücklich ausgelösten `workflow_dispatch` als vorhandener Rückfallweg. Dieser Workflow ist kein zusätzlicher automatischer Produktionsupload.
 
-In der GA4-Verwaltung sind die organisatorischen Einstellungen (Auftragsverarbeitung, Datenaufbewahrung und Freigaben) durch den Property-Verantwortlichen zu prüfen. Diese Repository-Konfiguration ändert keine Google-Kontoeinstellungen. Den Eingang echter Ereignisse im Echtzeitbericht nach dem öffentlichen Launch prüfen.
+## Lokale Prüfung
 
-## Deployment
+```sh
+npm ci
+sh scripts/build-cloudflare-pages.sh
+npm run check:seo
+npm run test:pages
+npm run test:consent
+python3 scripts/check_authorship.py
+```
 
-Pushes nach `main` starten `.github/workflows/deploy-united-domains.yml`. Der Workflow prüft JavaScript und testet Einwilligung und responsives Layout im Browser. Erst danach wird der Inhalt von `dist/` per SFTP in den dedizierten Unterordner `silverback` des SFTP-Homeverzeichnisses übertragen. Vorhandene andere Dateien und Websites werden nicht gelöscht. Die Serverunterstützung für atomare SFTP-Umbenennungen wird vorausgesetzt.
+`test:pages` startet den gepinnten Wrangler-Router ausschließlich lokal. Es prüft direkte Canonical-URLs, erhaltene `.html`-Weiterleitungen samt Query und die echte 404-Antwort. `check:seo` prüft zusätzlich interne Links und Anker, Sitemap, Entity-IDs und das gemeinsame Formular. Der CI-Browsertest prüft die lokalen Dateien in Chromium und WebKit; Tally und Analytics sind dort ersetzt, sodass keine Formulardaten oder QA-Besuche an die Dienste gehen.
 
-Repository-Secrets: `UD_SFTP_HOST`, `UD_SFTP_USER`, `UD_SFTP_PASSWORD`. Optional `UD_SFTP_KNOWN_HOSTS` für einen vorab geprüften SSH-Hostschlüssel. Ohne diesen optionalen Wert wird der neue Server beim ersten Verbindungsaufbau akzeptiert. Zugangsdaten nie in Dateien oder Logs schreiben.
+## Analytics und Formularabschlüsse
 
-Bei United Domains muss silverback-network.com auf diesen Ordner zeigen; HTTPS muss dort aktiviert sein. Die Domain-Zuordnung wird durch den Datei-Upload nicht geändert. Details: `docs/united-domains-go-live.md`.
+GA4-Mess-ID: `G-RWGM8X6QGH`. `dist/analytics.js` lädt Google ausschließlich nach gültiger Zustimmung und nur über HTTPS auf `silverback-network.com` bzw. `www.silverback-network.com`. In lokalen und Pages-Vorschauen bleibt Analytics aus. Ablehnen, Zustimmen und Widerruf sind auf allen Seiten verfügbar; die Auswahl gilt höchstens 180 Tage. Werbung und Google Signals bleiben deaktiviert.
+
+Seitenadressen werden ohne Query/Fragment verwendet. Von externen Referrern wird ausschließlich die HTTP(S)-Origin übergeben; dieselbe Origin wird unterdrückt. Ein `generate_lead` entsteht nur bei `Tally.FormSubmitted` des aktuell eingebundenen, bekannten Formulars `LDDoxJ`: erwartete Origin, iframe-Quelle und Formular-ID müssen übereinstimmen. Die Submission-ID dient nur einem flüchtigen Dedup-Set und wird ebenso wenig wie Antworten oder Respondentenangaben an Analytics übertragen. Ereignisse vor Zustimmung werden nicht nachgesendet; ein Formularaufruf ist kein Abschluss.
+
+Das Markieren von `generate_lead` als GA4-Schlüsselereignis ist eine separate Property-Einstellung. Diese Repository-Änderungen richten sie nicht ein und behaupten keinen getesteten echten Formularversand. Siehe `docs/tally-forms.md`.
+
+## Inhaltsdaten und Nachweise
+
+Die zwei bestehenden Ratgeber wurden am 29.09.2026 angelegt und am 30.09.2026 inhaltlich überarbeitet. Ihre belegten Artikel-Daten bleiben erhalten. Die am 29.10.2026 veröffentlichte Leistungsseite verwendet Service-Metadaten und keine aus einer Artikelvorlage übernommenen September-Daten. Kundenlogos der wescaleIT AG werden nicht als Silverback-Vermittlungsfälle ausgegeben; dafür fehlen weiterhin separat freigegebene reale Fälle.

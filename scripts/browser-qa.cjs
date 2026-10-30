@@ -2,6 +2,8 @@ const { chromium } = require('playwright');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const publicPath = file => file === 'index.html' ? '/' : '/' + file.replace(/\.html$/, '');
+const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(pathname) ? pathname : pathname + '.html';
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
@@ -21,7 +23,7 @@ const assert = require('node:assert/strict');
     }
     if (url.hostname === 'tally.so') { await route.fulfill({ contentType: 'text/html', body: '<p>Mock form for consent check</p>' }); return; }
     assert.equal(url.origin, origin, 'Unexpected external request: ' + url.origin);
-    const file = path.resolve(root, '.' + (url.pathname === '/' ? '/index.html' : url.pathname));
+    const file = path.resolve(root, '.' + sourcePath(url.pathname));
     assert.ok(file.startsWith(root + path.sep));
     await route.fulfill({ path: file });
   });
@@ -75,14 +77,15 @@ const assert = require('node:assert/strict');
   await page.locator('#anfrage-formular .form-unload').click();
   assert.equal(await page.locator('.form-embed iframe').count(), 0);
   await fs.mkdir('qa-screenshots', { recursive: true });
-  for (const file of ['index.html', 'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html']) {
-    await page.goto(origin + '/' + file);
+  for (const file of ['index.html', 'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html', 'externe-it-experten.html']) {
+    await page.goto(origin + publicPath(file));
     assert.equal(await page.locator('h1').count(), 1);
-    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), origin + (file === 'index.html' ? '/' : '/' + file));
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), origin + publicPath(file));
     const links = await page.locator('a[href]').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
     for (const href of links.filter(href => !/^(https?:|mailto:|tel:)/.test(href))) {
-      const [target, fragment] = href.split('#');
-      const content = await fs.readFile(path.join(root, target || file), 'utf8');
+      const target = new URL(href, page.url());
+      const fragment = decodeURIComponent(target.hash.slice(1));
+      const content = await fs.readFile(path.join(root, sourcePath(target.pathname)), 'utf8');
       if (fragment) assert.ok(content.includes('id="' + fragment + '"'), 'Missing target: ' + href);
     }
     await page.locator('script[type="application/ld+json"]').evaluateAll(nodes => nodes.forEach(n => JSON.parse(n.textContent)));
@@ -112,7 +115,7 @@ const assert = require('node:assert/strict');
   assert.ok(!(await context.cookies()).some(cookie => cookie.name.startsWith('_ga')));
 
   for (const file of ['impressum.html', 'datenschutz.html']) {
-    await page.goto(origin + '/' + file);
+    await page.goto(origin + publicPath(file));
     assert.equal(await page.locator('[data-analytics-settings]').count(), 1);
     await page.click('[data-analytics-settings]');
     assert.equal(await page.locator('#analytics-consent').isVisible(), true);

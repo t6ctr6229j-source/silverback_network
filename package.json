@@ -5,7 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 4173 --strictPort",
-    "check": "node --check dist/app.js"
+    "check": "node --check dist/app.js",
+    "check:seo": "python3 scripts/check_seo_consistency.py",
+    "test:pages": "python3 scripts/check_pages_runtime.py",
+    "test:consent": "node scripts/check-consent-lifecycle.cjs"
   },
-  "devDependencies": { "vite": "^7.1.0" }
+  "devDependencies": {
+    "vite": "^7.1.0",
+    "wrangler": "4.156.0"
+  }
 }

@@ -1,14 +1,28 @@
-# Silverback Tally forms
+# Silverback-Anfrageformular
 
-Both forms are published in workspace wQEMyG.
+Stand: 30. Oktober 2026.
 
-- Customer project enquiry: https://tally.so/r/pbgYgP (form pbgYgP)
-- Expert introduction: https://tally.so/r/yPO8Od (form yPO8Od)
+Die Website verwendet genau ein veröffentlichtes Formular für Unternehmen und externe Experten:
 
-The website embeds each form only after an explicit activation. Deactivation removes the iframe; no consent is persisted. No external embed script is used. Height messages are restricted to the matching iframe and tally.so origin. Direct links remain available.
+- Gemeinsame Anfrage: https://tally.so/r/LDDoxJ (Formular `LDDoxJ`)
+- Einstieg auf der Website: `/#anfrage-formular`
+- Vorhandene Links `/#projekt-formular` und `/#experten-formular` bleiben als kompatible Anker am gemeinsamen Bereich erhalten.
 
-Both forms use German, off-white #f5f3eb, charcoal #20231f and aubergine #35243d with periwinkle #7584eb buttons, with Inter as Tally's supported font. Customer form has five required questions and one optional notes field. Expert form has five required questions, an optional profile URL and optional rate/notes. Both have dedicated thank-you pages. Partial-submission capture is disabled. No custom email notifications or respondent emails were configured, and no test submissions were sent.
+Das iframe wird erst nach bewusster Aktivierung geladen. Deaktivieren entfernt das iframe; die Freigabe wird nicht dauerhaft gespeichert. Ein direkter Formularlink bleibt als Alternative verfügbar. Ein externes Embed-Skript wird nicht geladen. Eingehende Höhen- und Abschlussmeldungen werden gegen die tatsächliche iframe-Quelle und `https://tally.so` geprüft.
 
-Advanced layout settings and custom share metadata require Tally Pro and were not available for the published version. Core colors and typography were accepted. Customer advanced styles can appear in the builder preview only.
+## Analytics
 
-The current general wescaleIT privacy link and Tally privacy link are present. The organisation's privacy notice should cover the actual Tally processing before promoting the forms publicly.
+Eine Tally-Aktivierung ist keine Analytics-Zustimmung. Nur bei zusätzlicher gültiger Analytics-Zustimmung auf einem Produktionshost wird ein bestätigtes `Tally.FormSubmitted` des eingebundenen Formulars als `generate_lead` erfasst. Die Payload-ID wird nur im Arbeitsspeicher zur Deduplizierung verwendet. An GA4 gehen ausschließlich die feste Formular-ID, `method: tally` und die feste Ziel-Property. Keine Antworten, Kontaktdaten, Respondenten- oder Submission-IDs. Vor Zustimmung empfangene Abschlüsse werden nicht nachträglich übertragen.
+
+Offizielle Event-Dokumentation: https://developers.tally.so/widgets/events
+
+Automatisierte lokale Tests verwenden synthetische Meldungen; sie versenden keine Formulare. Die separaten öffentlichen Tally-Prüfungen lesen veröffentlichte Formulare und Einbettungen. Eine echte Zustellung oder Benachrichtigung wird damit nicht behauptet. Die GA4-Key-Event-Konfiguration erfolgt separat.
+
+## Frühere Formulare
+
+Diese veröffentlichten Formulare wurden durch die Zusammenführung auf der Website nicht gelöscht oder verändert:
+
+- Frühere Projektanfrage: https://tally.so/r/pbgYgP
+- Frühere Expertenvorstellung: https://tally.so/r/yPO8Od
+
+Sie sind nicht mehr parallel in der produktiven Website eingebunden.

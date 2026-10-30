@@ -22,7 +22,8 @@ async function localContext(browser, options = {}) {
       return;
     }
     assert.equal(url.origin, origin, 'Unexpected external request: ' + url.href);
-    const file = path.resolve(root, '.' + (url.pathname === '/' ? '/index.html' : url.pathname));
+    const pathname = url.pathname === '/' ? '/index.html' : path.extname(url.pathname) ? url.pathname : url.pathname + '.html';
+    const file = path.resolve(root, '.' + pathname);
     assert.ok(file.startsWith(root + path.sep));
     await route.fulfill({ path: file });
   });
