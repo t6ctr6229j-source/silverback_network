@@ -13,6 +13,9 @@ function make(c, {saved,blocked=false}={}) {
  let clock=1800000000000, reloads=0, serial=0;
  const storage=new Map(saved?[ [c.key,JSON.stringify(saved(clock))] ]:[]);
  const timers=new Map(), all=[], events=new Map(), cookieDeletes=[], scripts=[];
+ const frameCard={dataset:{formId:'LDDoxJ'}};
+ const frame={contentWindow:{},closest:()=>frameCard};
+ let frameAttached=true;
  class El {
   constructor(sel=''){this.sel=sel;this.dataset={};this.events={};this.children=new Map();this.classList={add(){},remove(){},contains(){return false;}};this.textContent='';this.hidden=false;this.open=false;this.checked=false;all.push(this);}
   querySelector(sel){if(!this.children.has(sel))this.children.set(sel,new El(sel));return this.children.get(sel);}
@@ -26,24 +29,29 @@ function make(c, {saved,blocked=false}={}) {
  const document={readyState:'complete',documentElement:el('html'),body:el('body'),activeElement:el('active'),head:{appendChild:s=>scripts.push(s),append:s=>scripts.push(s)},
   getElementById:id=>el('#'+id),createElement:tag=>new El(tag),
   querySelector:s=>s==='.goodie-footer'?null:el(s),
-  querySelectorAll:s=>s==='.footer-legal button'?[footer]:s==='[data-statistics-settings]'?[el(s)]:[],
+  querySelectorAll:s=>s==='.form-embed iframe'?(frameAttached?[frame]:[]):s==='.footer-legal button'?[footer]:s==='[data-statistics-settings]'?[el(s)]:[],
   addEventListener(){},removeEventListener(){},referrer:'https://example.org/start?secret=yes'};
  Object.defineProperty(document,'cookie',{get:()=>`_ga=example; _ga_${c.id.slice(2)}=example; _gcl_au=example; essential=keep`,set:v=>cookieDeletes.push(v)});
- const location={hostname:c.host,protocol:'https:',pathname:'/test.html',origin:'https://'+c.host,href:'https://'+c.host+'/test.html?secret=yes#fragment',reload(){reloads++;}};
+ const protocol=c.protocol||'https:';
+ const location={hostname:c.host,protocol,pathname:'/test.html',origin:protocol+'//'+c.host,href:protocol+'//'+c.host+'/test.html?secret=yes#fragment',reload(){reloads++;}};
  const window={location,addEventListener(k,f){if(!events.has(k))events.set(k,[]);events.get(k).push(f);},dispatchEvent(){},setTimeout:(f,d)=>{timers.set(++serial,{f,d});return serial;}};
  const context={window,document,location,localStorage:{getItem:k=>{if(blocked)throw Error('blocked');return storage.get(k)||null;},setItem:(k,v)=>{if(blocked)throw Error('blocked');storage.set(k,v);}},
   setTimeout:window.setTimeout,clearTimeout:id=>timers.delete(id),URL,Date:class extends Date {constructor(...a){super(...(a.length?a:[clock]));} static now(){return clock;}},CustomEvent:class {constructor(type,options){Object.assign(this,{type,...options});}}};
  let source=fs.readFileSync(root+c.file,'utf8');
  if(c.repo==='psoydo_website') source='(function(){\n'+source.slice(source.indexOf("  var box=document.getElementById('consent');"));
  vm.runInNewContext(source,context,{filename:c.file});
- return {window,document,scripts,cookieDeletes,storage,el,
+ return {window,document,scripts,cookieDeletes,storage,el,frame,frameCard,
   get reloads(){return reloads;},get now(){return clock;},
   click(sel){let e=[...all].reverse().find(e=>e.sel===sel&&e.events.click);assert.ok(e,`missing ${sel}`);for(const f of e.events.click)f({});},
   grant(){if(c.repo==='FCTH_Website')window.FCTHConsent.open();if(c.repo==='psoydo_website')el('#consent-analytics').checked=true;this.click(c.accept);},
   revoke(){if(c.repo==='FCTH_Website')window.FCTHConsent.open();this.click(c.deny);},
   event(type,e){for(const f of events.get(type)||[])f(e);},
+  message(data,{origin='https://tally.so',source=frame.contentWindow}={}){this.event('message',{origin,source,data});},
+  detachFrame(){frameAttached=false;},
+  advance(ms){clock+=ms;},
   expire(){clock+=LIFE+1;for(const [id,t] of [...timers]){timers.delete(id);t.f();}},
-  configs(){return (window.dataLayer||[]).filter(a=>a[0]==='config');}
+  configs(){return (window.dataLayer||[]).filter(a=>a[0]==='config');},
+  leads(){return (window.dataLayer||[]).filter(a=>a[0]==='event'&&a[1]==='generate_lead');}
  };
 }
 let count=0;
@@ -58,5 +66,54 @@ for(const c of configs.filter(c=>c.repo==='silverback_network')){
  check(c.repo+' unrelated storage does not reload',()=>{const x=make(c);x.event('storage',{key:'other'});assert.equal(x.reloads,0);});
  check(c.repo+' blocked storage stays usable',()=>{const x=make(c,{blocked:true});assert.equal(x.scripts.length,0);x.grant();assert.equal(x.scripts.length,1);x.revoke();assert.equal(x.window['ga-disable-'+c.id],true);assert.equal(x.reloads,1);});
  check(c.repo+' back-forward cache revalidates',()=>{const x=make(c);x.event('pageshow',{persisted:true});assert.equal(x.reloads,1);});
+ const submitted=(id='submission-fixture-1')=>({event:'Tally.FormSubmitted',payload:{id,formId:'LDDoxJ',respondentId:'respondent-fixture',formName:'Private title',fields:[{answer:{value:'fictional@example.invalid'}}]}});
+ check(c.repo+' only referrer origin and a query-free page URL enter GA',()=>{
+  const x=make(c);x.grant();const config=x.configs().find(a=>a[1]===c.id)[2];
+  assert.equal(config.page_referrer,'https://example.org');assert.equal(config.page_location,'https://'+c.host+'/test.html');
+  const self=make(c);self.document.referrer='https://'+c.host+'/previous?private=yes';self.grant();
+  assert.equal(self.configs().find(a=>a[1]===c.id)[2].page_referrer,'');
+ });
+ check(c.repo+' no submission replay after a later analytics opt-in',()=>{
+  const x=make(c);x.message(submitted());assert.equal(x.leads().length,0);assert.equal(x.scripts.length,0);
+  x.grant();x.message(submitted());assert.equal(x.leads().length,0);
+  x.message(submitted('submission-after-consent'));assert.equal(x.leads().length,1);
+ });
+ check(c.repo+' only the active Tally frame and shared form can confirm a lead',()=>{
+  const x=make(c);x.grant();
+  x.message(submitted(),{origin:'https://tally.so.example.invalid'});
+  x.message(submitted(),{source:{}});
+  const wrong=submitted();wrong.payload.formId='other-form';x.message(wrong);
+  x.message({event:'Tally.FormLoaded',payload:{formId:'LDDoxJ'}});
+  x.message('{invalid JSON');x.message({event:'Tally.FormSubmitted',payload:{formId:'LDDoxJ'}});
+  x.frameCard.dataset.formId='other-form';x.message(submitted());x.frameCard.dataset.formId='LDDoxJ';
+  assert.equal(x.leads().length,0);
+  x.message(JSON.stringify(submitted()));assert.equal(x.leads().length,1);
+  x.message(submitted());assert.equal(x.leads().length,1);
+  x.message(submitted('submission-fixture-2'));assert.equal(x.leads().length,2);
+  x.detachFrame();x.message(submitted('detached-frame'));assert.equal(x.leads().length,2);
+ });
+ check(c.repo+' lead parameters never contain submission data or identifiers',()=>{
+  const x=make(c);x.grant();x.message(submitted());
+  const params=JSON.parse(JSON.stringify(x.leads()[0][2]));
+  assert.deepEqual(params,{send_to:c.id,form_id:'LDDoxJ',method:'tally'});
+  const queue=JSON.stringify(x.window.dataLayer);
+  for(const privateValue of ['submission-fixture','respondent-fixture','Private title','fictional@example.invalid'])assert.ok(!queue.includes(privateValue));
+ });
+ check(c.repo+' rejected, revoked and expired consent cannot send leads',()=>{
+  const denied=make(c);denied.revoke();denied.message(submitted());assert.equal(denied.leads().length,0);
+  const revoked=make(c);revoked.grant();revoked.revoke();revoked.message(submitted());assert.equal(revoked.leads().length,0);
+  const expired=make(c);expired.grant();expired.advance(LIFE+1);expired.message(submitted());assert.equal(expired.leads().length,0);
+ });
+ check(c.repo+' previews and lookalike hosts never load GA or send leads',()=>{
+  for(const host of ['localhost','silverback-network.pages.dev','preview.silverback-network.pages.dev','silverback-network.com.example.invalid']){
+   const x=make({...c,host});x.grant();x.message(submitted());assert.equal(x.scripts.length,0);assert.equal(x.leads().length,0);
+  }
+  const apex=make({...c,host:'silverback-network.com'});apex.grant();apex.message(submitted());assert.equal(apex.leads().length,1);
+  const http=make({...c,protocol:'http:'});http.grant();http.message(submitted());assert.equal(http.scripts.length,0);assert.equal(http.leads().length,0);
+ });
+ check(c.repo+' blocked storage still respects the current consent for leads',()=>{
+  const x=make(c,{blocked:true});x.grant();x.message(submitted());assert.equal(x.leads().length,1);
+  x.revoke();x.message(submitted('after-withdrawal'));assert.equal(x.leads().length,1);
+ });
 }
 console.log(`${count} behavioral checks passed (isolated DOM/timer/storage harness, no Google network).`);

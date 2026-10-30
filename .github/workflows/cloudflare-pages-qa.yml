@@ -8,13 +8,23 @@ permissions:
   contents: read
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned local Pages runtime
+        run: npm ci
       - name: Build static Cloudflare Pages output
         run: sh scripts/build-cloudflare-pages.sh
       - name: Verify SEO entities and published URL set
         run: python3 scripts/check_seo_consistency.py
+      - name: Verify canonical URLs and legacy redirects in Cloudflare Pages
+        run: python3 scripts/check_pages_runtime.py
+      - name: Verify consent, referrer minimization and confirmed leads
+        run: node scripts/check-consent-lifecycle.cjs
       - name: Verify important files and security baseline
         run: |
           test -s cf-dist/index.html
@@ -56,6 +66,9 @@ jobs:
 
   smoke:
     needs: check
+    # This shared endpoint tracks deployed main, not the current PR candidate.
+    # Candidate routing is verified above using the pinned local Pages runtime.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Verify live Cloudflare Pages staging responses
