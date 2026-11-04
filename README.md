@@ -33,4 +33,8 @@ Das Markieren von `generate_lead` als GA4-Schlüsselereignis ist eine separate P
 
 ## Inhaltsdaten und Nachweise
 
-Die zwei bestehenden Ratgeber wurden am 29.09.2026 angelegt und am 30.09.2026 inhaltlich überarbeitet. Ihre belegten Artikel-Daten bleiben erhalten. Die am 29.10.2026 veröffentlichte Leistungsseite verwendet Service-Metadaten und keine aus einer Artikelvorlage übernommenen September-Daten. Kundenlogos der wescaleIT AG werden nicht als Silverback-Vermittlungsfälle ausgegeben; dafür fehlen weiterhin separat freigegebene reale Fälle.
+Die zwei bestehenden Ratgeber wurden am 29.09.2026 angelegt. Das ursprüngliche Veröffentlichungsdatum bleibt erhalten; die Überarbeitung vom 04.11.2026 ist in sichtbarem Datum, Open Graph und JSON-LD einheitlich ausgewiesen. Die Autorenbeschreibung nennt Florians belegte Vorstandsfunktion und den Bezug zur Marke Silverback.
+
+Die Leistungsseiten `/externe-it-experten` und `/it-management-auf-zeit` verwenden Service-Metadaten. Die erste Seite hilft bei der Auswahl externer Fachunterstützung und dem Projektbriefing. Die zweite beschreibt die Auftragsklärung für IT-Leitung, Service Management und Projektmanagement auf Zeit. Diese Rollen sind bereits im bisherigen veröffentlichten Angebot genannt. Verfügbarkeit, Leistungsumfang und konkrete Konditionen werden je Anfrage geklärt. Beide Seiten führen zum bestehenden gemeinsamen Anfrageformular.
+
+Kundenlogos der wescaleIT AG werden nicht als Silverback-Vermittlungsfälle ausgegeben; dafür fehlen weiterhin separat freigegebene reale Fälle. `docs/silverback-cases-pending.md` enthält das interne Erfassungsbriefing. Umfang, Beleggrundlage und Prüfungen der aktuellen Änderungen stehen in `docs/seo-geo-release-2026-11-04.md`.

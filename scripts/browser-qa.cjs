@@ -77,7 +77,7 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
   await page.locator('#anfrage-formular .form-unload').click();
   assert.equal(await page.locator('.form-embed iframe').count(), 0);
   await fs.mkdir('qa-screenshots', { recursive: true });
-  for (const file of ['index.html', 'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html', 'externe-it-experten.html']) {
+  for (const file of ['index.html', 'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html', 'externe-it-experten.html', 'it-management-auf-zeit.html']) {
     await page.goto(origin + publicPath(file));
     assert.equal(await page.locator('h1').count(), 1);
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), origin + publicPath(file));
