@@ -56,12 +56,16 @@ jobs:
         run: node scripts/motion-qa.cjs
         env:
           MOTION_QA_BROWSERS: chromium,webkit
+      - name: Verify service pages, navigation and contact consent
+        run: node scripts/browser-qa.cjs
       - name: Keep visual review screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: silverback-motion-qa
-          path: qa-motion/
+          path: |
+            qa-motion/
+            qa-screenshots/
           if-no-files-found: ignore
 
   smoke:

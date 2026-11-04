@@ -17,7 +17,8 @@ PUBLISHER = "https://wescaleit.com/#organization"
 BRAND = "https://wescaleit.com/#brand-silverback"
 AUTHOR = "https://wescaleit.com/florian-zegar#person"
 PAGES = ["index.html", "interim-manager-tagessatz.html",
-         "vermittlung-bei-silverback.html", "externe-it-experten.html"]
+         "vermittlung-bei-silverback.html", "externe-it-experten.html",
+         "it-management-auf-zeit.html"]
 LEGAL = ["impressum.html", "datenschutz.html"]
 OWNED_HOSTS = {"wescaleit.com", "www.wescaleit.com", "ciso2hero.com", "www.ciso2hero.com",
                "psoydo.com", "www.psoydo.com", "silverback-network.com", "www.silverback-network.com"}
@@ -126,7 +127,7 @@ for route, page in pages.items():
         if node.get("@type") == "Article":
             assert node.get("url") == node.get("mainEntityOfPage") == canonical, route
             assert node.get("author", {}).get("@id") == AUTHOR, route
-    if route == "/externe-it-experten":
+    if route in ("/externe-it-experten", "/it-management-auf-zeit"):
         assert by_type.get("Service", {}).get("url") == canonical, route
         assert not any(name and name.startswith("article:") for name in page.meta), "Service page has copied article metadata"
 
@@ -144,6 +145,6 @@ assert {"anfrage-formular", "projekt-formular", "experten-formular"} <= pages["/
 for route in list(pages)[1:]:
     assert not any(href in ("/#projekt-formular", "/#experten-formular") for href in pages[route].links), (route, "Use shared enquiry entry")
 
-print("PASS: six extensionless public URLs, matching canonicals/OG/schema/sitemap, links/anchors and shared entities")
+print(f"PASS: {len(pages)} extensionless public URLs, matching canonicals/OG/schema/sitemap, links/anchors and shared entities")
 print("PASS: one shared published Tally form with both compatible legacy anchors")
-print("PASS: all six pages reference the current analytics.js content hash")
+print(f"PASS: all {len(pages)} pages reference the current analytics.js content hash")
