@@ -37,6 +37,7 @@ class Page(HTMLParser):
         self.canonicals = []
         self.links = []
         self.scripts = []
+        self.images = []
         self.ids = set()
         self.json_scripts = []
         self._json = None
@@ -44,6 +45,8 @@ class Page(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        if tag == "img":
+            self.images.append(attrs)
         if tag == "h1":
             self.h1 += 1
         if tag == "title":
@@ -148,3 +151,32 @@ for route in list(pages)[1:]:
 print(f"PASS: {len(pages)} extensionless public URLs, matching canonicals/OG/schema/sitemap, links/anchors and shared entities")
 print("PASS: one shared published Tally form with both compatible legacy anchors")
 print(f"PASS: all {len(pages)} pages reference the current analytics.js content hash")
+
+# Responsive portrait assets retain the existing layout and original source files.
+portraits = {name: (922, 946) if name == "udo-zegar" else (1254, 1254)
+             for name in ("anja", "eva", "alex", "udo-zegar")}
+for name, (width, height) in portraits.items():
+    matches = [img for img in pages["/"].images if img.get("src") == f"assets/{name}-800.webp"]
+    assert len(matches) == 1, (name, "responsive portrait missing")
+    img = matches[0]
+    assert (img.get("width"), img.get("height")) == (str(width), str(height)), name
+    assert img.get("loading") == "lazy" and img.get("decoding") == "async", name
+    assert img.get("alt") and img.get("sizes"), name
+    expected = [(f"assets/{name}-{w}.webp", f"{w}w") for w in (480, 800, width)]
+    actual = [tuple(candidate.strip().split()) for candidate in img["srcset"].split(",")]
+    assert actual == expected, (name, "portrait candidates")
+    for asset, _ in expected:
+        data = (ROOT / asset).read_bytes()
+        assert data[:4] == b"RIFF" and data[8:12] == b"WEBP", asset
+        assert len(data) < 200_000, (asset, "portrait byte budget")
+    assert (ROOT / f"assets/{name}.png").is_file(), (name, "original missing")
+
+from urllib.robotparser import RobotFileParser
+robots = RobotFileParser()
+robots.parse((ROOT / "robots.txt").read_text().splitlines())
+for agent in ("Googlebot", "OAI-SearchBot", "Claude-SearchBot"):
+    for route in ROUTES:
+        assert robots.can_fetch(agent, ORIGIN + route), (agent, route)
+    assert not robots.can_fetch(agent, ORIGIN + "/cdn-cgi/l/email-protection"), agent
+    assert robots.can_fetch(agent, ORIGIN + "/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"), agent
+print("PASS: responsive portraits exist within byte budget; content and decode script remain crawlable")

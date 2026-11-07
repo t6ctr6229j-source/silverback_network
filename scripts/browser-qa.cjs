@@ -59,6 +59,28 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
       false,'Horizontal overflow at '+width);
   }
 
+  // Preserve portrait layout and load responsive WebP variants at mobile/desktop widths.
+  for (const width of [1440, 800, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const selector of ['.team-photo img', '.portrait > img']) {
+      for (const img of await page.locator(selector).all()) {
+        await img.scrollIntoViewIfNeeded();
+        await img.evaluate(el => el.decode());
+        const result = await img.evaluate(el => ({
+          src: el.currentSrc, width: el.naturalWidth, height: el.naturalHeight,
+          box: { width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height },
+          lazy: el.loading, alt: el.alt
+        }));
+        assert.match(result.src, /-(480|800|922|1254)\.webp$/, 'Responsive WebP should be selected');
+        assert.ok(result.width > 0 && result.height > 0 && result.box.width > 0 && result.box.height > 0);
+        assert.equal(result.lazy, 'lazy');
+        assert.ok(result.alt);
+      }
+    }
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false,
+      'Portraits must not overflow at ' + width);
+  }
+
   // The FAQ schema must describe exactly the visible questions and answers.
   const faq = await page.evaluate(() => {
     const graph = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent)['@graph'];

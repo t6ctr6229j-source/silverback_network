@@ -1,4 +1,6 @@
 User-agent: *
+# Cloudflare utility URL, not website content. Email protection remains enabled.
+Disallow: /cdn-cgi/l/email-protection
 Allow: /
 
 Sitemap: https://www.silverback-network.com/sitemap.xml
