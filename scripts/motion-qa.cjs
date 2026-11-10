@@ -30,12 +30,6 @@ async function localContext(browser, options = {}) {
   return context;
 }
 
-async function assertWireStill(page, reason) {
-  const before = await page.locator('.wire-ribbon').getAttribute('d');
-  await page.waitForTimeout(220);
-  assert.equal(await page.locator('.wire-ribbon').getAttribute('d'), before, reason);
-}
-
 async function run(engineName, engine) {
   const browser = await engine.launch({ headless: true });
   const errors = [];
@@ -53,8 +47,6 @@ async function run(engineName, engine) {
       'Consent choice must not jump to the footer');
     await page.waitForFunction(() => document.documentElement.dataset.motionState === 'active');
     await page.waitForFunction(() => document.querySelector('.hero-art').dataset.motionVisible === 'true');
-    const firstPath = await page.locator('.wire-ribbon').getAttribute('d');
-    await page.waitForFunction(first => document.querySelector('.wire-ribbon').getAttribute('d') !== first, firstPath);
 
     // Real keyboard activation of the hidden joke, without navigation.
     await page.locator('.gorilla-trigger').focus();
@@ -76,11 +68,9 @@ async function run(engineName, engine) {
     // One global preference also stops the existing logo loop and survives reload.
     await page.locator('[data-motion-toggle]').click();
     assert.equal(await page.locator('html').getAttribute('data-motion-state'), 'paused');
-    await assertWireStill(page, 'Paused wire still moves');
     assert.equal(await page.locator('.customer-logo-track').evaluate(el => getComputedStyle(el).animationName), 'none');
     await page.reload();
     assert.equal(await page.locator('html').getAttribute('data-motion-state'), 'paused');
-    await assertWireStill(page, 'Stored pause did not survive reload');
     await page.locator('[data-motion-toggle]').click();
     await page.locator('.customer-marquee').scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelector('.customer-marquee').dataset.motionVisible === 'true');
@@ -89,10 +79,9 @@ async function run(engineName, engine) {
     await page.locator('.marquee-toggle').click();
     assert.equal(await page.locator('html').getAttribute('data-motion-state'), 'active');
 
-    // Off-screen animation must not consume frames, and returns when visible again.
+    // The remaining logo loop pauses off-screen and returns when visible again.
     await page.locator('#anfrage-formular').scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelector('.hero-art').dataset.motionVisible === 'false');
-    await assertWireStill(page, 'Off-screen wire still moves');
     assert.equal(await page.locator('.customer-logo-track').evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
     await page.locator('.hero-art').scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelector('.hero-art').dataset.motionVisible === 'true');
@@ -102,20 +91,19 @@ async function run(engineName, engine) {
       Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
       document.dispatchEvent(new Event('visibilitychange'));
     });
-    await assertWireStill(page, 'Hidden page still schedules the wire');
     assert.equal(await page.locator('html').getAttribute('data-page-hidden'), 'true');
     assert.equal(await page.locator('.customer-logo-track').evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
     await page.evaluate(() => {
       delete document.hidden;
       document.dispatchEvent(new Event('visibilitychange'));
     });
-    const resumedPath = await page.locator('.wire-ribbon').getAttribute('d');
-    await page.waitForFunction(first => document.querySelector('.wire-ribbon').getAttribute('d') !== first, resumedPath);
+    await page.locator('.customer-marquee').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => document.querySelector('.customer-marquee').dataset.motionVisible === 'true');
+    assert.equal(await page.locator('.customer-logo-track').evaluate(el => getComputedStyle(el).animationPlayState), 'running');
 
     // A changed operating-system preference stops movement immediately and takes priority.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.waitForFunction(() => document.documentElement.dataset.motionState === 'reduced');
-    await assertWireStill(page, 'Reduced-motion wire still moves');
     assert.equal(await page.locator('[data-motion-toggle]').isDisabled(), true);
     assert.equal(await page.locator('.customer-logo-track').evaluate(el => getComputedStyle(el).animationName), 'none');
     await page.locator('.gorilla-trigger').focus();
@@ -154,15 +142,13 @@ async function run(engineName, engine) {
     await page.locator('.form-unload').click();
     assert.equal(await page.locator('.form-embed iframe').count(), 0);
 
-    // A touch viewport keeps the band inside the art and does not add mouse tracking.
+    // The touch layout stays within the viewport.
     const touchContext = await localContext(browser, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
     const touch = await touchContext.newPage();
     touch.on('pageerror', error => errors.push(error.message));
     await touch.goto(origin);
     await touch.locator('[data-analytics-deny]').click();
     await touch.locator('.hero-art').scrollIntoViewIfNeeded();
-    await touch.locator('.hero-art').dispatchEvent('pointermove', { pointerType: 'touch', clientX: 200, clientY: 300 });
-    assert.equal(await touch.locator('.hero-art').evaluate(el => el.style.getPropertyValue('--wire-x')), '');
     assert.equal(await touch.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await touchContext.close();
 
@@ -179,7 +165,7 @@ async function run(engineName, engine) {
     await noJS.close();
     assert.deepEqual(errors, [], engineName + ' JavaScript errors');
     await context.close();
-    console.log(`PASS ${engineName}: real motion; global and remembered pause; off-screen and visibility pause; OS preference; keyboard Easter egg; touch; 320–1440px layout; no-JS content; one consent-gated Tally form.`);
+    console.log(`PASS ${engineName}: remaining motion; global and remembered pause; off-screen and visibility pause; OS preference; keyboard Easter egg; touch; 320–1440px layout; no-JS content; one consent-gated Tally form.`);
   } finally {
     await browser.close();
   }
