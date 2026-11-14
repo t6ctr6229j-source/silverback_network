@@ -166,3 +166,12 @@ print("PASS: one shared published Tally form with both compatible legacy anchors
 print(f"PASS: all {len(pages)} pages reference the current analytics.js content hash")
 
 print("PASS: unique titles/descriptions, focused article titles and image alt/resource checks")
+
+# Keep the external-experts snippet concise and social metadata synchronized.
+experts = pages["/externe-it-experten"]
+assert experts.meta["description"] == "Externe IT-Experten für SAP, Entwicklung und Projektmanagement. Silverback klärt Aufgabe, Auswahl und Kosten. Persönlich und mit Open Books."
+assert experts.meta["description"] == experts.meta["og:description"]
+# The hero illustration is decorative, not a content image or a link.
+gorillas = [img for img in pages["/"].images if img.get("src") == "assets/silverback-gorilla-striped.png"]
+assert len(gorillas) == 1 and gorillas[0].get("alt") == "", "Keep decorative gorilla silent for screen readers"
+print("PASS: concise experts snippet and deliberately empty decorative-image alt")
