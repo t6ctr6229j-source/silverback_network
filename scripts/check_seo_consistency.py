@@ -175,3 +175,5 @@ assert experts.meta["description"] == experts.meta["og:description"]
 gorillas = [img for img in pages["/"].images if img.get("src") == "assets/silverback-gorilla-striped.png"]
 assert len(gorillas) == 1 and gorillas[0].get("alt") == "", "Keep decorative gorilla silent for screen readers"
 print("PASS: concise experts snippet and deliberately empty decorative-image alt")
+
+assert "Der Ablauf unserer IT-Vermittlung beginnt mit einem Gespräch" in (ROOT / "vermittlung-bei-silverback.html").read_text(encoding="utf-8")
