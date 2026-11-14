@@ -36,6 +36,7 @@ class Page(HTMLParser):
         self.meta = {}
         self.canonicals = []
         self.links = []
+        self.images = []
         self.scripts = []
         self.ids = set()
         self.json_scripts = []
@@ -52,6 +53,8 @@ class Page(HTMLParser):
             self.meta[attrs.get("name") or attrs.get("property")] = attrs.get("content", "")
         if tag == "link" and attrs.get("rel") == "canonical":
             self.canonicals.append(attrs.get("href", ""))
+        if tag == "img":
+            self.images.append(attrs)
         if tag == "a" and "href" in attrs:
             self.links.append(attrs["href"])
         if tag == "script" and "src" in attrs:
@@ -88,6 +91,11 @@ def strings(value):
 
 pages = {route: Page((ROOT / filename).read_text(encoding="utf-8"))
          for route, filename in ROUTES.items()}
+assert len({page.title for page in pages.values()}) == len(pages), "Duplicate page titles"
+assert len({page.meta.get("description") for page in pages.values()}) == len(pages), "Duplicate meta descriptions"
+# Editorial guardrail, not a promise about Google snippets or a pixel-based SEO score.
+assert pages["/interim-manager-tagessatz"].title == "Interim Manager: Tagessätze & Kosten | Silverback Network"
+assert pages["/vermittlung-bei-silverback"].title == "IT-Vermittlung: Ablauf & Konditionen | Silverback Network"
 for route, page in pages.items():
     canonical = ORIGIN + route
     assert page.canonicals == [canonical], (route, "canonical", page.canonicals)
@@ -96,6 +104,14 @@ for route, page in pages.items():
     assert "noindex" not in page.meta.get("robots", "").lower(), (route, "noindex")
     analytics = [src for src in page.scripts if urlsplit(src).path.split("/")[-1] == "analytics.js"]
     assert analytics == [ANALYTICS_SRC], (route, "Refresh analytics.js content version on every page", analytics, ANALYTICS_SRC)
+
+    for img in page.images:
+        assert "alt" in img, (route, "Missing image alt attribute", img.get("src"))
+        # Empty alt remains valid for decorative images; do not stuff keywords.
+        src = urlsplit(img.get("src", ""))
+        if not src.netloc and src.scheme not in ("data",):
+            target = ROOT / unquote(urlsplit(urljoin(canonical, src.path)).path).lstrip("/")
+            assert target.is_file(), (route, "Missing image resource", img.get("src"))
 
     for href in page.links:
         target = urlsplit(urljoin(canonical, href))
@@ -148,3 +164,5 @@ for route in list(pages)[1:]:
 print(f"PASS: {len(pages)} extensionless public URLs, matching canonicals/OG/schema/sitemap, links/anchors and shared entities")
 print("PASS: one shared published Tally form with both compatible legacy anchors")
 print(f"PASS: all {len(pages)} pages reference the current analytics.js content hash")
+
+print("PASS: unique titles/descriptions, focused article titles and image alt/resource checks")
