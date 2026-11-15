@@ -192,7 +192,8 @@ print("PASS: unchanged legal declarations and separately identified useful conta
 
 # Stable stylesheet names must carry their content version for returning visitors.
 style_href = "styles.css?v=" + hashlib.sha256((ROOT / "styles.css").read_bytes()).hexdigest()[:12]
-for html_path in ROOT.glob("*.html"):
+for html_name in PAGES + LEGAL:
+    html_path = ROOT / html_name
     html_source = html_path.read_text(encoding="utf-8")
     assert f'href="{style_href}"' in html_source, (html_path.name, "Refresh stylesheet content version")
     assert 'href="styles.css"' not in html_source
