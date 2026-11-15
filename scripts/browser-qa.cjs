@@ -37,6 +37,24 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
   assert.equal(google.length, 0, 'Analytics must not load after rejection');
   assert.equal(await page.locator('#analytics-consent').isVisible(), false);
 
+  // Disclosure signs are decorative UI, not semantic bold content.
+  assert.equal(await page.locator('summary > .disclosure-icon[aria-hidden="true"]').count(), 10);
+  assert.equal(await page.locator('summary > b').count(), 0);
+  for (const summary of await page.locator('details > summary').all()) {
+    const icon = summary.locator('.disclosure-icon');
+    assert.equal(await icon.textContent(), '+');
+    const style = await icon.evaluate(el => ({size:getComputedStyle(el).fontSize,weight:getComputedStyle(el).fontWeight,spacing:getComputedStyle(el).letterSpacing,parentSpacing:getComputedStyle(el.parentElement).letterSpacing}));
+    assert.equal(style.size, '30px');
+    assert.equal(style.weight, '400');
+    assert.equal(style.spacing, style.parentSpacing);
+    const initiallyOpen = await summary.evaluate(el => el.parentElement.open);
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await summary.evaluate(el => el.parentElement.open), !initiallyOpen);
+    await page.keyboard.press('Enter');
+    assert.equal(await summary.evaluate(el => el.parentElement.open), initiallyOpen);
+  }
+
   // One shared Tally form serves both companies and independent experts.
   assert.equal(await page.locator('.form-card').count(), 1, 'There must be exactly one form card');
   assert.equal(await page.locator('[data-form-id="LDDoxJ"]').count(), 1,
@@ -116,6 +134,15 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
 
   for (const file of ['impressum.html', 'datenschutz.html']) {
     await page.goto(origin + publicPath(file));
+    const legalTitle = file === 'impressum.html' ? 'Impressum und Anbieterangaben.' : 'Datenschutz auf dieser Website.';
+    assert.equal(await page.locator('h1').textContent(), legalTitle);
+    for (const width of [320, 390, 800, 1440]) {
+      await page.setViewportSize({width, height:1000});
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, file+' legal overflow '+width);
+      const bounds = await page.locator('h1').evaluate(el => { const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,width:innerWidth}; });
+      assert.ok(bounds.left >= 0 && bounds.right <= bounds.width, file+' heading clipped');
+      if (width === 390 || width === 1440) await page.screenshot({path:'qa-screenshots/'+file+'-'+width+'.png',fullPage:true,animations:'disabled'});
+    }
     assert.equal(await page.locator('[data-analytics-settings]').count(), 1);
     await page.click('[data-analytics-settings]');
     assert.equal(await page.locator('#analytics-consent').isVisible(), true);
@@ -144,4 +171,5 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
   await browser.close();
   console.log('PASS: consent, rejection, withdrawal, storage expiry, cross-tab withdrawal, legal pages, desktop and mobile layout.');
 })().catch(error => { console.error(error); process.exit(1); });
+
 
