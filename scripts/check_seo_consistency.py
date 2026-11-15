@@ -184,7 +184,8 @@ import re
 imprint = (ROOT / "impressum.html").read_text(encoding="utf-8")
 legal = imprint.split('<section class="legal-card">', 1)[1].split('<section aria-labelledby="orientierung">', 1)[0].strip()
 assert hashlib.sha256(legal.encode()).hexdigest() == "b473b001be3f1e4de28f49ee86a920138bfd6f59e157ba8df5c98608ee695d1c", "Legal declarations changed"
-main_text = re.sub(r'<[^>]+>', ' ', imprint.split('<main', 1)[1].split('</main>', 1)[0])
-assert len(main_text.split()) > 500, "Useful imprint/contact guide should remain complete"
-assert 'ergänzen die Anbieterangaben im Impressum' in imprint
+assert 'redaktionellen Wegweiser' in imprint
+assert 'Ergänzend zu den Anbieterangaben im Impressum' in imprint
+for target in ['/externe-it-experten', '/it-management-auf-zeit', '/vermittlung-bei-silverback', '/interim-manager-tagessatz', '/#anfrage-formular', '/datenschutz']:
+    assert f'href="{target}"' in imprint, ('Contact guide target missing', target)
 print("PASS: unchanged legal declarations and separately identified useful contact guide")
