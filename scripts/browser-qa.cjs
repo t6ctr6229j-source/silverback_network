@@ -47,11 +47,12 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
     assert.equal(style.size, '30px');
     assert.equal(style.weight, '400');
     assert.equal(style.spacing, style.parentSpacing);
+    const initiallyOpen = await summary.evaluate(el => el.parentElement.open);
     await summary.focus();
     await page.keyboard.press('Enter');
-    assert.equal(await summary.evaluate(el => el.parentElement.open), true);
+    assert.equal(await summary.evaluate(el => el.parentElement.open), !initiallyOpen);
     await page.keyboard.press('Enter');
-    assert.equal(await summary.evaluate(el => el.parentElement.open), false);
+    assert.equal(await summary.evaluate(el => el.parentElement.open), initiallyOpen);
   }
 
   // One shared Tally form serves both companies and independent experts.
