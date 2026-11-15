@@ -138,7 +138,7 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
     assert.equal(await page.locator('h1').textContent(), legalTitle);
     if (file === 'impressum.html') {
       const spacing = await page.locator('section[aria-labelledby="orientierung"] h3').evaluateAll(nodes => nodes.map(el => [getComputedStyle(el).marginTop,getComputedStyle(el).marginBottom]));
-      assert.deepEqual(spacing, Array(4).fill(['24px','10px']), 'Editorial heading spacing must load with current CSS');
+      assert.deepEqual(spacing, Array(5).fill(['24px','10px']), 'Editorial heading spacing must load with current CSS');
     }
     for (const width of [320, 390, 800, 1440]) {
       await page.setViewportSize({width, height:1000});
