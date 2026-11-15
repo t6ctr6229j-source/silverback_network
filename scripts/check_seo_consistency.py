@@ -189,3 +189,11 @@ assert 'Ergänzend zu den Anbieterangaben im Impressum' in imprint
 for target in ['/externe-it-experten', '/it-management-auf-zeit', '/vermittlung-bei-silverback', '/interim-manager-tagessatz', '/#anfrage-formular', '/datenschutz']:
     assert f'href="{target}"' in imprint, ('Contact guide target missing', target)
 print("PASS: unchanged legal declarations and separately identified useful contact guide")
+
+# Stable stylesheet names must carry their content version for returning visitors.
+style_href = "styles.css?v=" + hashlib.sha256((ROOT / "styles.css").read_bytes()).hexdigest()[:12]
+for html_path in ROOT.glob("*.html"):
+    html_source = html_path.read_text(encoding="utf-8")
+    assert f'href="{style_href}"' in html_source, (html_path.name, "Refresh stylesheet content version")
+    assert 'href="styles.css"' not in html_source
+print("PASS: every HTML page references current stylesheet content hash")
