@@ -1,4 +1,5 @@
 User-agent: *
+Disallow: /cdn-cgi/l/email-protection
 Allow: /
 
 Sitemap: https://www.silverback-network.com/sitemap.xml
