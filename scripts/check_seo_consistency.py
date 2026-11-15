@@ -198,3 +198,22 @@ for html_name in PAGES + LEGAL:
     assert f'href="{style_href}"' in html_source, (html_path.name, "Refresh stylesheet content version")
     assert 'href="styles.css"' not in html_source
 print("PASS: every HTML page references current stylesheet content hash")
+
+# Cloudflare's email helper is not site content. Keep this boundary narrow:
+# no page, image transformation, challenge, or email decoder is excluded.
+from urllib.robotparser import RobotFileParser
+robots_source = (ROOT / "robots.txt").read_text(encoding="utf-8")
+assert [line for line in robots_source.splitlines() if line.startswith("Disallow:")] == [
+    "Disallow: /cdn-cgi/l/email-protection"
+]
+robot_rules = RobotFileParser()
+robot_rules.parse(robots_source.splitlines())
+for agent in ("Googlebot", "SeobilityBot", "*"):
+    for route in ["/", "/impressum", "/datenschutz"] + ["/" + name.removesuffix(".html") for name in PAGES] + [
+        "/styles.css", "/motion.js", "/assets/silverback-gorilla-striped.png",
+        "/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js",
+        "/cdn-cgi/image/width=800/assets/test.png", "/cdn-cgi/challenge-platform/test"
+    ]:
+        assert robot_rules.can_fetch(agent, route), (agent, route)
+    assert not robot_rules.can_fetch(agent, "/cdn-cgi/l/email-protection")
+print("PASS: only Cloudflare email helper excluded; content and runtime assets allowed")
