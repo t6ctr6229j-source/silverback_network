@@ -217,3 +217,7 @@ for agent in ("Googlebot", "SeobilityBot", "*"):
         assert robot_rules.can_fetch(agent, route), (agent, route)
     assert not robot_rules.can_fetch(agent, "/cdn-cgi/l/email-protection")
 print("PASS: only Cloudflare email helper excluded; content and runtime assets allowed")
+
+assert "Kontakt ohne eingebettetes Formular" in imprint
+assert '<a href="/datenschutz#tally">' in imprint
+assert "Gemeinsames Formular laden" in imprint and "Gemeinsames Formular laden" in (ROOT / "index.html").read_text(encoding="utf-8")
