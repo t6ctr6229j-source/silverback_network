@@ -130,3 +130,6 @@
 .form-anchor{position:relative;display:block;scroll-margin-top:35px;height:0}
 @media(max-width:760px){.forms .form-grid{margin-top:32px}.forms .form-card-unified{padding-top:25px}.forms .form-card-unified h3{font-size:clamp(29px,8vw,42px)}}
 
+
+/* The optional editorial guide is visually separate from legal declarations. */
+.legal-page section[aria-labelledby="orientierung"] h3{font-size:18px;line-height:1.4;margin:24px 0 10px}

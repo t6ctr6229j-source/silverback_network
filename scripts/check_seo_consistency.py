@@ -177,3 +177,15 @@ assert len(gorillas) == 1 and gorillas[0].get("alt") == "", "Keep decorative gor
 print("PASS: concise experts snippet and deliberately empty decorative-image alt")
 
 assert "Der Ablauf unserer IT-Vermittlung beginnt mit einem Gespräch" in (ROOT / "vermittlung-bei-silverback.html").read_text(encoding="utf-8")
+
+
+# The editorial contact guide is separate from the unchanged legal declarations.
+import re
+imprint = (ROOT / "impressum.html").read_text(encoding="utf-8")
+legal = imprint.split('<section class="legal-card">', 1)[1].split('<section aria-labelledby="orientierung">', 1)[0].strip()
+assert hashlib.sha256(legal.encode()).hexdigest() == "b473b001be3f1e4de28f49ee86a920138bfd6f59e157ba8df5c98608ee695d1c", "Legal declarations changed"
+assert 'redaktionellen Wegweiser' in imprint
+assert 'Ergänzend zu den Anbieterangaben im Impressum' in imprint
+for target in ['/externe-it-experten', '/it-management-auf-zeit', '/vermittlung-bei-silverback', '/interim-manager-tagessatz', '/#anfrage-formular', '/datenschutz']:
+    assert f'href="{target}"' in imprint, ('Contact guide target missing', target)
+print("PASS: unchanged legal declarations and separately identified useful contact guide")
