@@ -133,6 +133,15 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
 
   for (const file of ['impressum.html', 'datenschutz.html']) {
     await page.goto(origin + publicPath(file));
+    const legalTitle = file === 'impressum.html' ? 'Impressum und Anbieterangaben.' : 'Datenschutz auf dieser Website.';
+    assert.equal(await page.locator('h1').textContent(), legalTitle);
+    for (const width of [320, 390, 800, 1440]) {
+      await page.setViewportSize({width, height:1000});
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, file+' legal overflow '+width);
+      const bounds = await page.locator('h1').evaluate(el => { const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,width:innerWidth}; });
+      assert.ok(bounds.left >= 0 && bounds.right <= bounds.width, file+' heading clipped');
+      if (width === 390 || width === 1440) await page.screenshot({path:'qa-screenshots/'+file+'-'+width+'.png',fullPage:true,animations:'disabled'});
+    }
     assert.equal(await page.locator('[data-analytics-settings]').count(), 1);
     await page.click('[data-analytics-settings]');
     assert.equal(await page.locator('#analytics-consent').isVisible(), true);
