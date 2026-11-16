@@ -169,7 +169,12 @@ print("PASS: unique titles/descriptions, focused article titles and image alt/re
 
 # Keep the external-experts snippet concise and social metadata synchronized.
 experts = pages["/externe-it-experten"]
-assert experts.meta["description"] == "Externe IT-Experten für SAP, Entwicklung und Projektmanagement. Silverback klärt Aufgabe, Auswahl und Kosten. Persönlich und mit Open Books."
+assert experts.meta["description"] == "IT-Freelancer für SAP, Entwicklung und Projektmanagement finden. Silverback klärt Erfahrung, Verfügbarkeit und Kosten persönlich, mit offenen Konditionen."
+assert experts.title == experts.meta["og:title"] == "IT-Freelancer finden | Externe Experten von Silverback"
+experts_source = (ROOT / "externe-it-experten.html").read_text(encoding="utf-8")
+assert "<h1>IT-Freelancer finden. Persönlich empfohlen.</h1>" in experts_source
+assert "Was kostet die Vermittlung eines IT-Freelancers?" in experts_source
+assert "üblicherweise 10 Euro netto je geleisteter Expertenstunde" in experts_source
 assert experts.meta["description"] == experts.meta["og:description"]
 # The hero illustration is decorative, not a content image or a link.
 gorillas = [img for img in pages["/"].images if img.get("src") == "assets/silverback-gorilla-striped.png"]
