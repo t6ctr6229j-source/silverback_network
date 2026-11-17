@@ -18,7 +18,8 @@ BRAND = "https://wescaleit.com/#brand-silverback"
 AUTHOR = "https://wescaleit.com/florian-zegar#person"
 PAGES = ["index.html", "interim-manager-tagessatz.html",
          "vermittlung-bei-silverback.html", "externe-it-experten.html",
-         "it-management-auf-zeit.html"]
+         "it-management-auf-zeit.html", "sap-freelancer.html",
+         "freelancer-softwareentwicklung.html"]
 LEGAL = ["impressum.html", "datenschutz.html"]
 OWNED_HOSTS = {"wescaleit.com", "www.wescaleit.com", "ciso2hero.com", "www.ciso2hero.com",
                "psoydo.com", "www.psoydo.com", "silverback-network.com", "www.silverback-network.com"}
