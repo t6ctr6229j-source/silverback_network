@@ -21,6 +21,8 @@ jobs:
         run: sh scripts/build-cloudflare-pages.sh
       - name: Verify SEO entities and published URL set
         run: python3 scripts/check_seo_consistency.py
+      - name: Verify five NDA-safe content clusters
+        run: python3 scripts/check_content_clusters.py
       - name: Verify role content and budget examples
         run: python3 scripts/check_growth_content.py
       - name: Verify canonical URLs and legacy redirects in Cloudflare Pages

@@ -1,0 +1,92 @@
+[
+  {
+    "slug": "it-experten-oeffentliche-verwaltung",
+    "type": "Leistung",
+    "title": "IT-Experten für Verwaltungsportale anfragen",
+    "cluster": "Öffentliche Verwaltung"
+  },
+  {
+    "slug": "portalentwicklung-team-rollen",
+    "type": "Ratgeber",
+    "title": "Portalentwicklung: Aufgaben und Teamrollen klären",
+    "cluster": "Öffentliche Verwaltung"
+  },
+  {
+    "slug": "szenarien/verwaltungsportal-weiterentwicklung",
+    "type": "Fiktives Szenario",
+    "title": "Ein Verwaltungsportal weiterentwickeln",
+    "cluster": "Öffentliche Verwaltung"
+  },
+  {
+    "slug": "netapp-freelancer",
+    "type": "Leistung",
+    "title": "NetApp-Freelancer: Bedarf präzise anfragen",
+    "cluster": "Storage und NetApp"
+  },
+  {
+    "slug": "netapp-storage-projektbriefing",
+    "type": "Ratgeber",
+    "title": "NetApp-Projektbriefing: Fragen vor der Suche",
+    "cluster": "Storage und NetApp"
+  },
+  {
+    "slug": "szenarien/storage-modernisierung",
+    "type": "Fiktives Szenario",
+    "title": "Eine Storage-Modernisierung vorbereiten",
+    "cluster": "Storage und NetApp"
+  },
+  {
+    "slug": "servicenow-freelancer",
+    "type": "Leistung",
+    "title": "ServiceNow-Freelancer für dein Vorhaben anfragen",
+    "cluster": "ServiceNow"
+  },
+  {
+    "slug": "servicenow-betrieb-projekt-rollen",
+    "type": "Ratgeber",
+    "title": "ServiceNow: Betrieb und Projektrollen trennen",
+    "cluster": "ServiceNow"
+  },
+  {
+    "slug": "szenarien/servicenow-weiterentwicklung",
+    "type": "Fiktives Szenario",
+    "title": "Eine ServiceNow-Weiterentwicklung eingrenzen",
+    "cluster": "ServiceNow"
+  },
+  {
+    "slug": "interim-leitung-it-infrastruktur",
+    "type": "Leistung",
+    "title": "Interim-Leitung für IT-Infrastruktur anfragen",
+    "cluster": "IT-Infrastrukturmanagement"
+  },
+  {
+    "slug": "it-infrastruktur-uebernahme-checkliste",
+    "type": "Ratgeber",
+    "title": "IT-Infrastruktur übernehmen: eine Checkliste",
+    "cluster": "IT-Infrastrukturmanagement"
+  },
+  {
+    "slug": "szenarien/infrastrukturleitung-ueberbruecken",
+    "type": "Fiktives Szenario",
+    "title": "Eine Lücke in der Infrastrukturleitung überbrücken",
+    "cluster": "IT-Infrastrukturmanagement"
+  },
+  {
+    "slug": "it-strategie-experten",
+    "type": "Leistung",
+    "title": "Externe Experten für IT-Strategie anfragen",
+    "cluster": "IT-Strategie"
+  },
+  {
+    "slug": "it-strategie-roadmap",
+    "type": "Ratgeber",
+    "title": "IT-Roadmap: Prioritäten nachvollziehbar entscheiden",
+    "cluster": "IT-Strategie"
+  },
+  {
+    "slug": "szenarien/it-roadmap-priorisieren",
+    "type": "Fiktives Szenario",
+    "title": "Eine IT-Roadmap gemeinsam priorisieren",
+    "cluster": "IT-Strategie"
+  }
+]

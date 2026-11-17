@@ -95,7 +95,7 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
   await page.locator('#anfrage-formular .form-unload').click();
   assert.equal(await page.locator('.form-embed iframe').count(), 0);
   await fs.mkdir('qa-screenshots', { recursive: true });
-  for (const file of ['index.html', 'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html', 'externe-it-experten.html', 'it-management-auf-zeit.html', 'sap-freelancer.html', 'freelancer-softwareentwicklung.html']) {
+  for (const file of [...JSON.parse(await fs.readFile(path.join(root, 'content-clusters.json'), 'utf8')).map(x => x.slug + '.html'), 'index.html', 'interim-manager-tagessatz.html', 'vermittlung-bei-silverback.html', 'externe-it-experten.html', 'it-management-auf-zeit.html', 'sap-freelancer.html', 'freelancer-softwareentwicklung.html']) {
     await page.goto(origin + publicPath(file));
     assert.equal(await page.locator('h1').count(), 1);
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), origin + publicPath(file));
@@ -111,7 +111,7 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
       await page.setViewportSize({ width, height: 1000 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, file + ' overflows at ' + width);
       if (width === 1440 || width === 390) {
-        await page.screenshot({ path: 'qa-screenshots/' + file + '-' + width + '.png', fullPage: true, animations: 'disabled' });
+        await page.screenshot({ path: 'qa-screenshots/' + file.replaceAll('/', '-') + '-' + width + '.png', fullPage: true, animations: 'disabled' });
       }
     }
   }
