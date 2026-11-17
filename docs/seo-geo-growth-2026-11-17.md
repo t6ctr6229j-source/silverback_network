@@ -21,3 +21,6 @@ Keine freelancermap-Abfrage, kein automatisierter Datenimport und keine unbestä
 - Lokale visuelle Prüfung via Sites-Preview war wegen Browser-Zugriffsfehler auf den gelieferten Preview-Endpunkt nicht möglich. Nicht als bestanden ausgeben.
 
 Nur Draft-PR. Kein Merge und kein Produktionsdeployment ohne separate Freigabe.
+
+## Browser-CI-Nachbesserung
+Der erste Browserlauf fand auf der Softwareentwicklungsseite bei 320 px einen horizontalen Überlauf. Der lange zusammengesetzte CTA-Text beanspruchte zusammen mit Padding und Pfeil mehr Platz als die mobile Kontaktbox. Die Beschriftung lautet nun knapp „Entwickler anfragen“. Die 320-px-Prüfung bleibt unverändert; kein Abschneiden oder Verbergen von Überlauf.
