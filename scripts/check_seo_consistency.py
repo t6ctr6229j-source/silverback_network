@@ -20,6 +20,7 @@ PAGES = ["index.html", "interim-manager-tagessatz.html",
          "vermittlung-bei-silverback.html", "externe-it-experten.html",
          "it-management-auf-zeit.html", "sap-freelancer.html",
          "freelancer-softwareentwicklung.html"]
+PAGES += [item["slug"] + ".html" for item in json.loads((ROOT / "content-clusters.json").read_text())]
 LEGAL = ["impressum.html", "datenschutz.html"]
 OWNED_HOSTS = {"wescaleit.com", "www.wescaleit.com", "ciso2hero.com", "www.ciso2hero.com",
                "psoydo.com", "www.psoydo.com", "silverback-network.com", "www.silverback-network.com"}
@@ -104,7 +105,7 @@ for route, page in pages.items():
     assert page.h1 == 1 and page.title.strip() and page.meta.get("description"), (route, "page metadata")
     assert "noindex" not in page.meta.get("robots", "").lower(), (route, "noindex")
     analytics = [src for src in page.scripts if urlsplit(src).path.split("/")[-1] == "analytics.js"]
-    assert analytics == [ANALYTICS_SRC], (route, "Refresh analytics.js content version on every page", analytics, ANALYTICS_SRC)
+    assert [src.lstrip("/") for src in analytics] == [ANALYTICS_SRC], (route, "Refresh analytics.js content version on every page", analytics, ANALYTICS_SRC)
 
     for img in page.images:
         assert "alt" in img, (route, "Missing image alt attribute", img.get("src"))
@@ -201,7 +202,7 @@ style_href = "styles.css?v=" + hashlib.sha256((ROOT / "styles.css").read_bytes()
 for html_name in PAGES + LEGAL:
     html_path = ROOT / html_name
     html_source = html_path.read_text(encoding="utf-8")
-    assert f'href="{style_href}"' in html_source, (html_path.name, "Refresh stylesheet content version")
+    assert (f'href="{style_href}"' in html_source or f'href="/{style_href}"' in html_source), (html_path.name, "Refresh stylesheet content version")
     assert 'href="styles.css"' not in html_source
 print("PASS: every HTML page references current stylesheet content hash")
 
