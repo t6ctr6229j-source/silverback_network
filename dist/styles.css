@@ -28,12 +28,12 @@
 .team-photo img{width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:grayscale(1);transform:scale(var(--portrait-scale,1));transform-origin:50% 20%;transition:transform .5s ease}
 .team-photo-anja{--portrait-scale:1.28}.team-photo-eva{--portrait-scale:1.24}
 .team-person:hover img{transform:scale(calc(var(--portrait-scale,1) * 1.025))}.team-person figcaption{padding:20px 0;border-bottom:1px solid var(--line)}
-.team-person h3{font-size:32px;font-weight:500;letter-spacing:-1px}.team-person figcaption p{font-size:14px;line-height:1.5;margin-top:8px}
+.team-person .team-name{font-size:32px;font-weight:500;letter-spacing:-1px}.team-person figcaption p{font-size:14px;line-height:1.5;margin-top:8px}
 .team-bottom{display:flex;align-items:center;justify-content:space-between;gap:30px;padding-top:30px;font-size:16px;line-height:1.6}
 .form-note{display:block;font-size:13px;line-height:1.6;margin-top:17px;max-width:335px}
 @media(max-width:1050px){.header nav{gap:18px;font-size:13px}.header .nav-cta{gap:12px}.honesty-layout{gap:6vw}.team-intro{gap:40px}.team-grid{gap:20px}.team-person figcaption p{font-size:13px}}
 @media(max-width:900px) and (min-width:761px){.header{margin:0 24px;gap:20px}.brand{width:145px}.header nav{gap:13px}.header nav a{font-size:12px}.header .nav-cta{gap:8px}}
-@media(max-width:760px){.header nav a{font-size:17px}.honesty-layout,.team-intro{grid-template-columns:1fr;gap:35px}.honesty-copy h2,.team-intro h2{font-size:clamp(43px,10.5vw,70px)}.honesty-copy>p{font-size:16px;margin-top:24px}.open-ledger{padding:24px 0}.open-ledger dt{font-size:25px;gap:16px}.open-ledger dd{margin-left:43px}.honesty-bottom{margin-top:35px;display:block}.honesty-bottom p{font-size:24px;margin-bottom:25px}.team-intro>p{font-size:16px}.team-grid{grid-template-columns:1fr;margin-top:35px;gap:35px}.team-photo{aspect-ratio:1/1.08}.team-person h3{font-size:30px}.team-person figcaption p{font-size:14px}.team-bottom{display:block;font-size:16px}.team-bottom p{margin-bottom:20px}.contact-mail{overflow-wrap:anywhere}}
+@media(max-width:760px){.header nav a{font-size:17px}.honesty-layout,.team-intro{grid-template-columns:1fr;gap:35px}.honesty-copy h2,.team-intro h2{font-size:clamp(43px,10.5vw,70px)}.honesty-copy>p{font-size:16px;margin-top:24px}.open-ledger{padding:24px 0}.open-ledger dt{font-size:25px;gap:16px}.open-ledger dd{margin-left:43px}.honesty-bottom{margin-top:35px;display:block}.honesty-bottom p{font-size:24px;margin-bottom:25px}.team-intro>p{font-size:16px}.team-grid{grid-template-columns:1fr;margin-top:35px;gap:35px}.team-photo{aspect-ratio:1/1.08}.team-person .team-name{font-size:30px}.team-person figcaption p{font-size:14px}.team-bottom{display:block;font-size:16px}.team-bottom p{margin-bottom:20px}.contact-mail{overflow-wrap:anywhere}}
 
 /* Company signature, embedded forms and local legal pages */
 [hidden]{display:none!important}
@@ -73,7 +73,7 @@
 .portrait,.team-photo,.team-photo-eva,.team-photo-alex{background:var(--soft)}
 .portrait-caption{background:var(--lime);color:var(--ink)}
 .team-person figcaption{border-bottom:3px solid var(--lime)}
-.team-person h3{color:var(--aubergine)}
+.team-person .team-name{color:var(--aubergine)}
 .people .portrait{color:var(--ink)}
 .people-copy .button-outline{border-color:var(--lime);background:var(--lime);color:var(--ink)}
 .people-copy .button-outline:hover{background:var(--paper);border-color:var(--paper);color:var(--ink)}
@@ -162,3 +162,7 @@
 body:has(.contact-dock) footer{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 @media(max-width:380px){.contact-dock{right:10px;bottom:calc(10px + env(safe-area-inset-bottom));max-width:calc(100vw - 20px)}.contact-dock a{padding:12px;font-size:14px;gap:7px}}
 @media print{.contact-dock{display:none!important}}
+
+/* Names are figure captions, not additional page sections. */
+.team-person figcaption .team-name{font-size:32px;font-weight:500;letter-spacing:-1px;line-height:normal;margin-top:0}
+@media(max-width:760px){.team-person figcaption .team-name{font-size:30px}}
