@@ -37,6 +37,36 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
   assert.equal(google.length, 0, 'Analytics must not load after rejection');
   assert.equal(await page.locator('#analytics-consent').isVisible(), false);
 
+  // Service discovery is a crawlable part of the document and remains usable on phones.
+  assert.equal(await page.locator('#navigation a[href="#leistungen"]').count(), 1);
+  assert.equal(await page.locator('.service-finder-main a').count(), 2);
+  assert.equal(await page.locator('.service-finder-topics a').count(), 7);
+  assert.equal(await page.locator('img:not([alt])').count(), 0);
+  for (const width of [1440, 1024, 800, 390, 320]) {
+    await page.setViewportSize({width,height:1000});
+    await page.locator('#leistungen').scrollIntoViewIfNeeded();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false,
+      'Service navigation must fit at '+width);
+    for (const link of await page.locator('.service-finder-main a, .service-finder-topics a').all()) {
+      assert.equal(await link.isVisible(), true);
+      const box = await link.boundingBox();
+      assert.ok(box.x >= 0 && box.x + box.width <= width + 1, 'Service link outside viewport');
+    }
+  }
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('.menu-toggle').click();
+  await page.locator('#navigation a[href="#leistungen"]').click();
+  assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'), 'false');
+  await page.locator('.service-finder-topics a[href="/netapp-freelancer"]').click();
+  assert.equal(new URL(page.url()).pathname, '/netapp-freelancer');
+  await page.locator('.topic-breadcrumb a[href="/#leistungen"]').click();
+  assert.equal(new URL(page.url()).hash, '#leistungen');
+  await page.goBack();
+  assert.equal(new URL(page.url()).pathname, '/netapp-freelancer');
+  await page.goForward();
+  assert.equal(new URL(page.url()).hash, '#leistungen');
+  await page.goto(origin);
+
   // Disclosure signs are decorative UI, not semantic bold content.
   assert.equal(await page.locator('summary > .disclosure-icon[aria-hidden="true"]').count(), 10);
   assert.equal(await page.locator('summary > b').count(), 0);

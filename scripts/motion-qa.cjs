@@ -81,7 +81,7 @@ async function run(engineName, engine) {
 
     // The remaining logo loop pauses off-screen and returns when visible again.
     await page.locator('#anfrage-formular').scrollIntoViewIfNeeded();
-    await page.waitForFunction(() => document.querySelector('.hero-art').dataset.motionVisible === 'false');
+    await page.waitForFunction(() => document.querySelector('.customer-marquee').dataset.motionVisible === 'false');
     assert.equal(await page.locator('.customer-logo-track').evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
     await page.locator('.hero-art').scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelector('.hero-art').dataset.motionVisible === 'true');

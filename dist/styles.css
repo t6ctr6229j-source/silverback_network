@@ -133,3 +133,20 @@
 
 /* The optional editorial guide is visually separate from legal declarations. */
 .legal-page section[aria-labelledby="orientierung"] h3{font-size:18px;line-height:1.4;margin:24px 0 10px}
+
+/* Crawlable service navigation: real links, no JavaScript dependency. */
+.service-finder{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.service-finder-intro{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;margin:22px 0 34px}
+.service-finder h2{font-size:clamp(34px,4.2vw,64px);font-weight:500;line-height:1.12;letter-spacing:-.04em}
+.service-finder-intro p{font-size:17px;line-height:1.65;max-width:520px}
+.service-finder-main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.service-finder-main a{display:flex;flex-direction:column;gap:16px;padding:28px;background:var(--aubergine);color:var(--paper);border:2px solid var(--aubergine);border-radius:12px}
+.service-finder-main strong{font-size:clamp(21px,2.1vw,30px);line-height:1.25;font-weight:500;overflow-wrap:anywhere}
+.service-finder-main span{font-size:16px;line-height:1.6;max-width:470px}
+.service-finder-main a:hover,.service-finder-main a:focus-visible{border-color:var(--lime)}
+.service-finder-topics{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0}
+.service-finder-topics a{padding:12px 18px;border:1px solid var(--aubergine);border-radius:30px;font-size:15px;line-height:1.4}
+.service-finder-topics a:hover,.service-finder-topics a:focus-visible{background:var(--lime)}
+.service-finder-note{font-size:14px;line-height:1.8;max-width:900px}.service-finder-note a{text-decoration:underline;text-underline-offset:3px}
+.topic-breadcrumb{display:flex;flex-wrap:wrap;gap:10px 22px;margin:0 0 28px;font-size:14px;line-height:1.6}.topic-breadcrumb a{text-decoration:underline;text-underline-offset:4px}
+@media(max-width:760px){.service-finder-intro{grid-template-columns:1fr;gap:22px}.service-finder-main{grid-template-columns:1fr}.service-finder-main a{padding:22px}.service-finder-topics a{padding:10px 14px}.service-finder-note{font-size:14px}}
