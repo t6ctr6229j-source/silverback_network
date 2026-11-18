@@ -166,3 +166,6 @@ body:has(.contact-dock) footer{padding-bottom:calc(110px + env(safe-area-inset-b
 /* Names are figure captions, not additional page sections. */
 .team-person figcaption .team-name{font-size:32px;font-weight:500;letter-spacing:-1px;line-height:normal;margin-top:0}
 @media(max-width:760px){.team-person figcaption .team-name{font-size:30px}}
+
+/* Clear intent paths without overlays or additional third-party requests. */
+.cro-choices{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.cro-choices .button{min-height:48px}.cro-microcopy{font-size:.9rem;line-height:1.6;max-width:42ch;margin-top:16px}.cro-context{padding:20px;border-left:4px solid #35243d;background:#edf2d7;margin:20px 0;line-height:1.6}.cro-next{margin:24px 0;padding:20px;border:1px solid #c9ccc4;border-radius:12px}.cro-next h4{font-size:1.2rem;margin:0 0 12px}.cro-next ol{padding-left:22px}.cro-next li{margin:10px 0}.cro-next p{line-height:1.6}@media(max-width:600px){.cro-choices{align-items:stretch;flex-direction:column}.cro-choices .button{justify-content:space-between}.cro-next{padding:16px}}

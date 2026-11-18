@@ -30,7 +30,9 @@ jobs:
       - name: Verify canonical URLs and legacy redirects in Cloudflare Pages
         run: python3 scripts/check_pages_runtime.py
       - name: Verify consent, referrer minimization and confirmed leads
-        run: node scripts/check-consent-lifecycle.cjs
+        run: |
+          node scripts/check-consent-lifecycle.cjs
+          node scripts/check-cro-context.cjs
       - name: Verify important files and security baseline
         run: |
           test -s cf-dist/index.html
