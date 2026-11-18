@@ -8,7 +8,7 @@ assert len({x['cluster'] for x in items})==5
 hub=(D/'externe-it-experten.html').read_text()
 for item in items:
  source=(D/(item['slug']+'.html')).read_text()
- assert '<iframe' not in source and 'href="/#anfrage-formular"' in source
+ assert '<iframe' not in source and re.search(r'href="/(?:\?anliegen=kunde&amp;thema=[a-z-]+)?#anfrage-formular"', source)
  assert source.count('<h1>')==1
  assert 'href="/styles.css?v=' in source and 'src="/analytics.js?v=' in source
  assert len(re.sub('<[^>]+>',' ',source.split('<main')[1].split('</main>')[0]).split())>=250

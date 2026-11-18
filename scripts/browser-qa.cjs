@@ -58,12 +58,16 @@ const sourcePath = pathname => pathname === '/' ? '/index.html' : path.extname(p
   await page.locator('#navigation a[href="#leistungen"]').click();
   assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'), 'false');
   await page.locator('.service-finder-topics a[href="/netapp-freelancer"]').click();
+  await page.waitForURL(url => url.pathname === '/netapp-freelancer');
   assert.equal(new URL(page.url()).pathname, '/netapp-freelancer');
   await page.locator('.topic-breadcrumb a[href="/#leistungen"]').click();
+  await page.waitForURL(url => url.pathname === '/' && url.hash === '#leistungen');
   assert.equal(new URL(page.url()).hash, '#leistungen');
   await page.goBack();
+  await page.waitForURL(url => url.pathname === '/netapp-freelancer');
   assert.equal(new URL(page.url()).pathname, '/netapp-freelancer');
   await page.goForward();
+  await page.waitForURL(url => url.pathname === '/' && url.hash === '#leistungen');
   assert.equal(new URL(page.url()).hash, '#leistungen');
   await page.goto(origin);
 

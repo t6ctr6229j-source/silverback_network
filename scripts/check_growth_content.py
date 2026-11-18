@@ -6,7 +6,7 @@ for slug, term in [('sap-freelancer', 'SAP'), ('freelancer-softwareentwicklung',
     text = (root / (slug + '.html')).read_text()
     assert term in text
     assert 'id="briefing"' in text
-    assert text.count('href="/#anfrage-formular"') == 2
+    assert len(re.findall(r'href="/(?:\?anliegen=kunde&amp;thema=[a-z-]+)?#anfrage-formular"', text)) == 2
     assert '10 Euro netto' in text
     assert 'tatsächlichen Verfügbarkeit' in text
     assert 'budgetformel' in text

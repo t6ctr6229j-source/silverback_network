@@ -96,6 +96,14 @@
     if (!loaded || acceptedUntil <= Date.now() || window['ga-disable-' + id] !== false) return;
     window.gtag('event', 'generate_lead', { send_to: id, form_id: 'LDDoxJ', method: 'tally' });
   });
+  // Contact intent is not a completed lead. Never include link targets or PII.
+  document.addEventListener('click', event => {
+    const link = event.target?.closest?.('[data-contact-dock] a');
+    if (!link || !production || !loaded || acceptedUntil <= Date.now() || window['ga-disable-' + id] !== false) return;
+    const href = link.getAttribute('href') || '';
+    const method = href.startsWith('tel:') ? 'phone' : href.startsWith('mailto:') ? 'email' : null;
+    if (method) window.gtag('event', 'contact_click', { send_to: id, method, placement: 'sticky' });
+  });
   function watchExpiry(expires) {
     clearTimeout(expiryTimer);
     const remaining = expires - Date.now();

@@ -30,7 +30,9 @@ jobs:
       - name: Verify canonical URLs and legacy redirects in Cloudflare Pages
         run: python3 scripts/check_pages_runtime.py
       - name: Verify consent, referrer minimization and confirmed leads
-        run: node scripts/check-consent-lifecycle.cjs
+        run: |
+          node scripts/check-consent-lifecycle.cjs
+          node scripts/check-cro-context.cjs
       - name: Verify important files and security baseline
         run: |
           test -s cf-dist/index.html
@@ -48,16 +50,18 @@ jobs:
   motion:
     needs: check
     runs-on: ubuntu-24.04
+    # Official prebuilt browsers and OS libraries; keep aligned with npm below.
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble@sha256:42f02d323c310069b4d54c94bd91a608966a486c3492c48ae0b1cea747ec5ca2
+      options: --shm-size=1gb
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install browser for local draft checks
-        run: |
-          npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install --with-deps chromium webkit
+      - name: Install matching Playwright library for local draft checks
+        run: npm install --no-save --package-lock=false playwright@1.56.1
       - name: Verify movement, accessibility, mobile layout and shared form
         run: node scripts/motion-qa.cjs
         env:
@@ -105,3 +109,4 @@ jobs:
           grep -iq '^content-security-policy:' /tmp/silverback-headers
           grep -qi 'silverback' /tmp/silverback-index
           echo "Cloudflare Pages staging responds correctly with security and noindex headers."
+

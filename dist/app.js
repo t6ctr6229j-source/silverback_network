@@ -62,3 +62,18 @@ window.addEventListener('message', event => {
 });
 
 // Decorative movement, including the logo strip, shares the control in motion.js.
+
+// Curated, visible context only. The existing Tally form has no verified prefill
+// mapping; never pretend this selection was submitted or inject arbitrary URL text.
+(() => {
+  const box = document.querySelector('.cro-context');
+  if (!box) return;
+  const params = new URLSearchParams(location.search);
+  const roles = { kunde: 'Du suchst externe IT-Expertise oder Interim Management.', experte: 'Du möchtest deine Erfahrung als Experte einbringen.' };
+  const topics = { netapp: 'NetApp', servicenow: 'ServiceNow', infrastruktur: 'Infrastruktur', portal: 'Portalentwicklung', behoerden: 'Öffentliche Verwaltung', strategie: 'IT-Strategie', management: 'IT-Management', 'externe-it': 'IT-Experten', sap: 'SAP' };
+  const role = (Object.hasOwn(roles, params.get('anliegen')) ? roles[params.get('anliegen')] : '');
+  const topic = (Object.hasOwn(topics, params.get('thema')) ? topics[params.get('thema')] : '');
+  if (!role && !topic) return;
+  box.textContent = [role, topic ? 'Dein Thema: ' + topic + '.' : '', 'Wähle dein Anliegen im Formular und nenne dort dein Thema. Diese Auswahl wird nicht automatisch an Tally übertragen.'].filter(Boolean).join(' ');
+  box.hidden = false;
+})();

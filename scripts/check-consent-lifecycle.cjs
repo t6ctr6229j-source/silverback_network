@@ -30,7 +30,7 @@ function make(c, {saved,blocked=false}={}) {
   getElementById:id=>el('#'+id),createElement:tag=>new El(tag),
   querySelector:s=>s==='.goodie-footer'?null:el(s),
   querySelectorAll:s=>s==='.form-embed iframe'?(frameAttached?[frame]:[]):s==='.footer-legal button'?[footer]:s==='[data-statistics-settings]'?[el(s)]:[],
-  addEventListener(){},removeEventListener(){},referrer:'https://example.org/start?secret=yes'};
+  addEventListener(k,f){if(!events.has('doc:'+k))events.set('doc:'+k,[]);events.get('doc:'+k).push(f);},removeEventListener(){},referrer:'https://example.org/start?secret=yes'};
  Object.defineProperty(document,'cookie',{get:()=>`_ga=example; _ga_${c.id.slice(2)}=example; _gcl_au=example; essential=keep`,set:v=>cookieDeletes.push(v)});
  const protocol=c.protocol||'https:';
  const location={hostname:c.host,protocol,pathname:'/test.html',origin:protocol+'//'+c.host,href:protocol+'//'+c.host+'/test.html?secret=yes#fragment',reload(){reloads++;}};
@@ -54,6 +54,16 @@ function make(c, {saved,blocked=false}={}) {
   leads(){return (window.dataLayer||[]).filter(a=>a[0]==='event'&&a[1]==='generate_lead');}
  };
 }
+const contactConfig=configs.find(c=>c.repo==='silverback_network');
+const contactClick=x=>x.event('doc:click',{target:{closest:()=>({getAttribute:()=> 'tel:+49123456789'})}});
+const contacts=x=>(x.window.dataLayer||[]).filter(a=>a[0]==='event'&&a[1]==='contact_click');
+for(const host of ['www.silverback-network.com','preview.pages.dev']) {
+ const x=make({...contactConfig,host}); contactClick(x); assert.equal(contacts(x).length,0);
+ x.grant(); contactClick(x); assert.equal(contacts(x).length,host.startsWith('www.')?1:0);
+ if(contacts(x).length) assert.equal(JSON.stringify(contacts(x)[0][2]),JSON.stringify({send_to:contactConfig.id,method:'phone',placement:'sticky'}));
+ x.revoke(); contactClick(x); assert.equal(contacts(x).length,host.startsWith('www.')?1:0);
+}
+console.log('PASS contact intent only after consent, never replayed, production only, no PII');
 let count=0;
 function check(name,fn){fn();count++;console.log('PASS',name);}
 for(const c of configs.filter(c=>c.repo==='silverback_network')){

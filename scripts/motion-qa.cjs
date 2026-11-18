@@ -155,7 +155,9 @@ async function run(engineName, engine) {
     const noJS = await localContext(browser, { javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
     const staticPage = await noJS.newPage();
     await staticPage.goto(origin);
-    assert.match(await staticPage.locator('h1').innerText(), /Staffing/);
+    assert.match(await staticPage.locator('h1').innerText(), /Dein Projekt\.[\s\S]*Die passende[\s\S]*Erfahrung\./);
+    assert.match(await staticPage.locator('#geschichte').innerText(), /Wir wollten nie Staffing machen/);
+    assert.equal(await staticPage.locator('.cro-choices a').count(), 2);
     assert.equal(await staticPage.locator('.hero-copy').evaluate(el => getComputedStyle(el).opacity), '1');
     assert.equal(await staticPage.locator('.hero-art').evaluate(el => getComputedStyle(el).opacity), '1');
     assert.equal(await staticPage.locator('.customer-logo-track').evaluate(el => getComputedStyle(el).animationName), 'none');
